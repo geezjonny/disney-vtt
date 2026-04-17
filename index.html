@@ -378,9 +378,16 @@ const shownPings=new Set();
 let tokRef, rollRef, mapRef, presRef, pingRef, fogRef;
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const loadCfg=()=>{try{return JSON.parse(localStorage.getItem('vtt5-cfg')||'null');}catch{return null;}};
+// Hardcoded Firebase config — players never need to enter anything
+const HARDCODED_CFG={
+  apiKey:"AIzaSyBxhgU7Ef039EywGNuIWwjuxz1Vsn_ekrE",
+  authDomain:"disney-vtt.firebaseapp.com",
+  databaseURL:"https://disney-vtt-default-rtdb.firebaseio.com",
+  projectId:"disney-vtt"
+};
+const loadCfg=()=>{const saved=JSON.parse(localStorage.getItem('vtt5-cfg')||'null');return saved||HARDCODED_CFG;};
 window.openCfg=()=>{
-  const c=loadCfg()||{};
+  const c=loadCfg();
   document.getElementById('c-key').value=c.apiKey||'';
   document.getElementById('c-auth').value=c.authDomain||'';
   document.getElementById('c-db').value=c.databaseURL||'';
@@ -401,7 +408,7 @@ window.enter=async()=>{
   sid=document.getElementById('inp-sid').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-')||'default';
   if(!myName){toast('Enter your name');return;}
   const cfg=loadCfg();
-  if(!cfg?.databaseURL){toast('Configure Firebase first');openCfg();return;}
+  if(!cfg?.databaseURL){toast('Firebase config missing');return;}
   isGM=role==='gm';
   try{const app=initializeApp(cfg,'v'+myId);db=getDatabase(app);}
   catch(e){toast('Firebase: '+e.message);return;}
