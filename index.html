@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VTT</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:#0d0b09;
+  --surface:#141210;
+  --border:rgba(180,130,60,0.2);
+  --gold:#b8822a;
+  --gold-hi:#dba84a;
+  --text:#e8dcc8;
+  --dim:#7a6a52;
+  --red:#7a1a1a;
+  --ping:#4fc3f7;
+  --fog:rgba(8,6,4,0.9);
+}
+
+body{background:var(--bg);color:var(--text);font-family:'IM Fell English',Georgia,serif;height:100vh;overflow:hidden;}
+
+/* ══ SETUP ══ */
+#setup{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 35%,#1e1408 0%,#060402 100%);}
+#setup h1{font-family:'Cinzel',serif;font-size:2.4rem;font-weight:700;color:var(--gold-hi);letter-spacing:0.18em;text-shadow:0 0 40px rgba(184,130,42,0.4);margin-bottom:0.1rem;}
+#setup .sub{font-style:italic;color:var(--dim);font-size:0.95rem;margin-bottom:2rem;letter-spacing:0.06em;}
+
+.card{background:#100e0b;border:1px solid var(--gold);width:400px;padding:1.8rem 2.2rem;position:relative;}
+.card::after{content:'';position:absolute;inset:4px;border:1px solid rgba(180,130,60,0.09);pointer-events:none;}
+.card h2{font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.22em;color:var(--gold);text-align:center;margin-bottom:1.5rem;text-transform:uppercase;}
+
+.f{margin-bottom:0.9rem;}
+.f label{display:block;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:0.28rem;}
+.f input,.f select,.f textarea{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:var(--text);font-family:'IM Fell English',serif;font-size:0.95rem;padding:0.48rem 0.65rem;outline:none;transition:border-color 0.15s;border-radius:1px;resize:vertical;}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--gold);}
+.f select option{background:#100e0b;}
+.f .note{font-size:0.7rem;color:rgba(232,220,200,0.3);margin-top:0.22rem;font-style:italic;}
+
+.btn-p{width:100%;padding:0.68rem;font-family:'Cinzel',serif;font-size:0.76rem;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;border-radius:1px;background:linear-gradient(135deg,#7a1a1a,#561010);color:var(--text);border:1px solid #9a2a2a;transition:all 0.15s;margin-top:0.25rem;}
+.btn-p:hover{background:linear-gradient(135deg,#9a2020,#7a1a1a);transform:translateY(-1px);}
+.btn-g{width:100%;padding:0.56rem;font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:1px;background:transparent;color:var(--gold);border:1px solid var(--border);transition:all 0.15s;margin-top:0.45rem;}
+.btn-g:hover{border-color:var(--gold);background:rgba(180,130,60,0.06);}
+
+/* ══ MODAL ══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:800;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#100e0b;border:1px solid var(--gold);padding:1.6rem 1.8rem;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto;border-radius:1px;box-shadow:0 20px 60px rgba(0,0,0,0.9);}
+.modal h3{font-family:'Cinzel',serif;color:var(--gold);font-size:0.88rem;letter-spacing:0.12em;margin-bottom:0.75rem;}
+.modal p{font-size:0.82rem;color:var(--dim);line-height:1.65;margin-bottom:0.9rem;font-style:italic;}
+.modal-btns{display:flex;gap:0.6rem;margin-top:1.1rem;}
+.modal-btns .btn-p,.modal-btns .btn-g{margin:0;}
+
+/* ══ APP ══ */
+#app{display:none;height:100vh;flex-direction:column;}
+
+#bar{height:40px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 0.7rem;gap:0.45rem;z-index:30;}
+.logo{font-family:'Cinzel',serif;font-size:0.76rem;color:var(--gold);letter-spacing:0.16em;white-space:nowrap;margin-right:0.2rem;}
+.vsep{width:1px;height:17px;background:var(--border);flex-shrink:0;}
+.tb{background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.09em;padding:0.2rem 0.5rem;border-radius:1px;cursor:pointer;white-space:nowrap;transition:all 0.12s;text-transform:uppercase;}
+.tb:hover{border-color:var(--gold);color:var(--gold-hi);background:rgba(180,130,60,0.06);}
+.tb.active{border-color:var(--gold);color:var(--gold-hi);background:rgba(180,130,60,0.1);}
+.tb.danger{border-color:rgba(122,26,26,0.38);color:#a05050;}
+.tb.danger:hover{border-color:var(--red);color:#ff8888;background:rgba(122,26,26,0.12);}
+.tb.fog-mode{border-color:rgba(80,100,160,0.4);color:#9999cc;}
+.tb.fog-mode.active{border-color:#9999cc;color:#ccccee;background:rgba(80,100,160,0.15);}
+
+#sdot{width:6px;height:6px;border-radius:50%;background:#333;flex-shrink:0;transition:all 0.3s;}
+#sdot.ok{background:#5aad5a;box-shadow:0 0 5px rgba(90,173,90,0.5);}
+#bar-right{margin-left:auto;display:flex;align-items:center;gap:0.5rem;}
+.pip{width:6px;height:6px;border-radius:50%;background:#5aad5a;box-shadow:0 0 4px rgba(90,173,90,0.4);display:inline-block;}
+#sid-lbl{font-size:0.72rem;color:rgba(180,130,60,0.4);cursor:pointer;padding:0.14rem 0.32rem;border:1px solid transparent;border-radius:1px;transition:all 0.15s;font-family:'IM Fell English',serif;}
+#sid-lbl:hover{border-color:var(--border);color:var(--gold);}
+
+.gm{display:none!important;}
+body.is-gm .gm{display:flex!important;}
+body.is-gm .gm-b{display:block!important;}
+.gm-b{display:none!important;}
+
+/* ══ LAYOUT ══ */
+#main{display:flex;flex:1;overflow:hidden;}
+
+#board{flex:1;position:relative;overflow:hidden;background:#080604;cursor:default;}
+#board-wrap{position:absolute;transform-origin:0 0;}
+#map-img{display:block;position:relative;z-index:1;pointer-events:none;user-select:none;}
+#token-layer{position:absolute;top:0;left:0;z-index:2;}
+#fog-layer{position:absolute;top:0;left:0;z-index:3;pointer-events:none;}
+#ping-layer{position:absolute;top:0;left:0;z-index:4;pointer-events:none;}
+body.is-gm #fog-layer{pointer-events:all;}
+
+#empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;pointer-events:none;}
+#empty-state.gone{display:none;}
+#empty-state p{font-family:'Cinzel',serif;font-size:0.82rem;color:rgba(180,130,60,0.22);letter-spacing:0.14em;}
+
+/* ══ TOKENS ══ */
+.token{position:absolute;transform:translate(-50%,-50%);z-index:10;user-select:none;}
+.token img{width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.8);display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+.token-name{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.05em;white-space:nowrap;color:#fff;text-shadow:0 0 4px #000,0 1px 4px #000;pointer-events:none;}
+.token.type-pc img{border-color:rgba(100,180,255,0.7);}
+.token.type-enemy img{border-color:rgba(220,80,80,0.7);}
+body.is-gm .token{cursor:grab;}
+body.is-gm .token:hover img{box-shadow:0 0 0 2px var(--gold),0 2px 12px rgba(0,0,0,0.8);}
+body.is-gm .token.dragging{cursor:grabbing;opacity:0.75;z-index:100;}
+
+/* ══ FOG ══ */
+.fog-rect{position:absolute;background:var(--fog);border:1px solid rgba(255,255,255,0.04);z-index:3;border-radius:2px;}
+body.is-gm .fog-rect{cursor:move;}
+body.is-gm .fog-rect:hover{border-color:rgba(150,150,200,0.3);}
+body.is-gm .fog-rect.sel{border-color:rgba(150,150,220,0.6);box-shadow:0 0 0 1px rgba(150,150,220,0.3);}
+.fog-del{position:absolute;top:-8px;right:-8px;width:16px;height:16px;border-radius:50%;background:#7a1a1a;color:#fff;display:none;align-items:center;justify-content:center;font-size:0.6rem;cursor:pointer;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.6);}
+.fog-rect.sel .fog-del{display:flex;}
+.fog-resize{position:absolute;bottom:-5px;right:-5px;width:12px;height:12px;background:rgba(150,150,220,0.7);border-radius:2px;cursor:se-resize;display:none;z-index:10;}
+.fog-rect.sel .fog-resize{display:block;}
+
+/* ══ PINGS ══ */
+.ping-dot{position:absolute;transform:translate(-50%,-50%);pointer-events:none;animation:pfade 2s ease-out forwards;}
+.ping-dot::before{content:'';position:absolute;border-radius:50%;background:var(--ping);box-shadow:0 0 12px var(--ping);animation:pcore 2s ease-out forwards;}
+.ping-dot::after{content:'';position:absolute;border-radius:50%;border:2px solid var(--ping);animation:pring 2s ease-out forwards;}
+@keyframes pfade{0%{opacity:1}75%{opacity:1}100%{opacity:0}}
+@keyframes pcore{0%{width:14px;height:14px;top:-7px;left:-7px}100%{width:8px;height:8px;top:-4px;left:-4px}}
+@keyframes pring{0%{width:14px;height:14px;top:-7px;left:-7px;opacity:0.9}100%{width:70px;height:70px;top:-35px;left:-35px;opacity:0}}
+.ping-lbl{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:0.48rem;color:var(--ping);white-space:nowrap;text-shadow:0 0 4px #000;letter-spacing:0.06em;}
+
+/* ══ PANEL ══ */
+#panel{width:260px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+#info-pane{flex-shrink:0;border-bottom:1px solid var(--border);display:none;flex-direction:column;max-height:55%;overflow:hidden;}
+#info-pane.open{display:flex;}
+#info-header{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.75rem 0.45rem;flex-shrink:0;}
+#info-name{font-family:'Cinzel',serif;font-size:0.78rem;color:var(--gold-hi);letter-spacing:0.08em;}
+#info-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.9rem;line-height:1;padding:0.1rem 0.3rem;transition:color 0.12s;}
+#info-close:hover{color:var(--text);}
+#info-sheet{flex:1;overflow:auto;padding:0 0.5rem 0.5rem;}
+#info-sheet img{width:100%;border-radius:2px;border:1px solid var(--border);}
+#info-enemy{padding:0 0.75rem 0.75rem;font-size:0.82rem;line-height:1.65;font-style:italic;color:rgba(232,220,200,0.7);}
+#info-enemy strong{display:block;font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.08em;color:var(--gold);margin-bottom:0.35rem;font-style:normal;}
+
+#panel-scroll{flex:1;overflow-y:auto;}
+#panel-scroll::-webkit-scrollbar{width:3px;}
+#panel-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.ps{padding:0.8rem;border-bottom:1px solid var(--border);}
+.ps h3{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.65rem;}
+
+/* Dice */
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.26rem;margin-bottom:0.5rem;}
+.db{background:rgba(122,26,26,0.1);border:1px solid rgba(122,26,26,0.26);color:var(--dim);font-family:'Cinzel',serif;font-size:0.63rem;padding:0.35rem 0.1rem;border-radius:1px;cursor:pointer;text-align:center;transition:all 0.12s;}
+.db:hover{background:rgba(122,26,26,0.3);border-color:#7a1a1a;color:#ffaaaa;transform:translateY(-1px);}
+.db:active{transform:none;}
+.mr{display:flex;align-items:center;gap:0.32rem;margin-bottom:0.45rem;}
+.mr label{font-family:'Cinzel',serif;font-size:0.56rem;letter-spacing:0.08em;color:var(--dim);white-space:nowrap;}
+.mr input{width:44px;background:rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--text);font-family:'IM Fell English',serif;font-size:0.86rem;padding:0.2rem 0.35rem;border-radius:1px;outline:none;}
+.mr input:focus{border-color:var(--gold);}
+#rlog{height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:0.2rem;}
+#rlog::-webkit-scrollbar{width:3px;}
+#rlog::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.re{font-size:0.74rem;padding:0.2rem 0.38rem;background:rgba(0,0,0,0.18);border-left:2px solid transparent;line-height:1.45;animation:si 0.18s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.re.crit{border-left-color:var(--gold-hi);}
+.re.fumble{border-left-color:var(--red);}
+.re .who{font-family:'Cinzel',serif;font-size:0.58rem;color:var(--gold);}
+.re .tot{font-size:0.94rem;font-weight:bold;color:var(--gold-hi);margin-left:0.12rem;}
+.re .brk{font-size:0.64rem;color:rgba(232,220,200,0.3);}
+
+/* Token list */
+#tok-list{display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.45rem;}
+.tli{display:flex;align-items:center;gap:0.4rem;padding:0.28rem 0.4rem;background:rgba(0,0,0,0.16);border:1px solid transparent;border-radius:1px;cursor:pointer;transition:all 0.12s;}
+.tli:hover{border-color:var(--border);}
+.tli.sel{border-color:var(--gold);background:rgba(180,130,60,0.07);}
+.tli img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
+.tli-name{font-family:'Cinzel',serif;font-size:0.6rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tli-type{font-size:0.55rem;color:var(--dim);font-family:'Cinzel',serif;flex-shrink:0;}
+.tli-del{background:none;border:none;color:#884444;cursor:pointer;font-size:0.75rem;padding:0.08rem 0.2rem;opacity:0;transition:opacity 0.12s;line-height:1;}
+.tli:hover .tli-del{opacity:1;}
+
+.action-btn{display:block;width:100%;padding:0.35rem;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;text-align:center;color:var(--gold);border:1px solid var(--border);border-radius:1px;cursor:pointer;transition:all 0.12s;margin-bottom:0.28rem;background:transparent;}
+.action-btn:hover{border-color:var(--gold);background:rgba(180,130,60,0.07);}
+
+.ping-note{font-size:0.7rem;font-style:italic;color:var(--dim);line-height:1.6;opacity:0.8;}
+
+#toast{position:fixed;bottom:1.1rem;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,8,6,0.97);border:1px solid var(--gold);color:var(--text);font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.1em;padding:0.45rem 1.1rem;border-radius:1px;box-shadow:0 4px 18px rgba(0,0,0,0.6);z-index:9999;transition:transform 0.22s;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <h1>VTT</h1>
+  <p class="sub">simple · persistent · browser-based</p>
+  <div class="card">
+    <h2>Join the Table</h2>
+    <div class="f">
+      <label>Your Name</label>
+      <input id="inp-name" type="text" placeholder="Thorin..." maxlength="24">
+    </div>
+    <div class="f">
+      <label>Role</label>
+      <select id="inp-role">
+        <option value="player">Player</option>
+        <option value="gm">Game Master</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Session ID</label>
+      <input id="inp-sid" type="text" placeholder="avernus-campaign" maxlength="40">
+      <div class="note">Everyone uses the same ID — opens to whatever the GM last loaded</div>
+    </div>
+    <button class="btn-p" onclick="enter()">Enter</button>
+    <button class="btn-g" onclick="openCfg()">⚙ Firebase Config</button>
+  </div>
+</div>
+
+<!-- FIREBASE CONFIG MODAL -->
+<div class="overlay" id="cfg-modal">
+  <div class="modal">
+    <h3>⚙ Firebase Config</h3>
+    <p>Free project at console.firebase.google.com → enable Realtime Database (test mode) → Project Settings → Web App → copy values below. No Storage needed.</p>
+    <div class="f"><label>API Key</label><input id="c-key" type="text" placeholder="AIzaSy..."></div>
+    <div class="f"><label>Auth Domain</label><input id="c-auth" type="text" placeholder="project.firebaseapp.com"></div>
+    <div class="f"><label>Database URL</label><input id="c-db" type="text" placeholder="https://project-rtdb.firebaseio.com"><div class="note">Realtime Database → Data tab</div></div>
+    <div class="f"><label>Project ID</label><input id="c-pid" type="text" placeholder="project-12345"></div>
+    <div class="modal-btns">
+      <button class="btn-p" onclick="saveCfg()">Save</button>
+      <button class="btn-g" onclick="closeCfg()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT TOKEN MODAL -->
+<div class="overlay" id="tok-modal">
+  <div class="modal">
+    <h3 id="tok-modal-title">Add Token</h3>
+    <div class="f">
+      <label>Name</label>
+      <input id="tok-name" type="text" placeholder="Merregon..." maxlength="30">
+    </div>
+    <div class="f">
+      <label>Type</label>
+      <select id="tok-type" onchange="updateTokTypeUI(this.value)">
+        <option value="pc">Player Character (PC)</option>
+        <option value="enemy">Enemy / NPC</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Token Image URL</label>
+      <input id="tok-img-url" type="text" placeholder="https://yourusername.github.io/vtt/tokens/fighter.png">
+      <div class="note">Upload the image to your GitHub repo /tokens folder first</div>
+    </div>
+    <div class="f" id="tok-sheet-wrap">
+      <label>Character Sheet Image URL</label>
+      <input id="tok-sheet-url" type="text" placeholder="https://yourusername.github.io/vtt/sheets/thorin.png">
+      <div class="note">Players see this when they click the token</div>
+    </div>
+    <div class="f" id="tok-lore-wrap" style="display:none">
+      <label>Description</label>
+      <textarea id="tok-lore" rows="3" placeholder="A merregon, soldier of Avernus. Follows its master's will without question."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-p" id="tok-save-btn" onclick="saveToken()">Add Token</button>
+      <button class="btn-g" onclick="closeTokModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SET MAP MODAL -->
+<div class="overlay" id="map-modal">
+  <div class="modal">
+    <h3>Set Map</h3>
+    <p>Upload your map image to the /maps folder in your GitHub repo, then paste the URL below.</p>
+    <div class="f">
+      <label>Map Image URL</label>
+      <input id="map-url-input" type="text" placeholder="https://yourusername.github.io/vtt/maps/dungeon.png">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-p" onclick="setMap()">Load Map</button>
+      <button class="btn-g" onclick="closeMapModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="bar">
+    <span class="logo">⚔ VTT</span>
+    <div class="vsep"></div>
+    <div id="sdot"></div>
+    <button class="tb gm" onclick="openMapModal()">Set Map</button>
+    <button class="tb danger gm" onclick="clearMap()">Clear Map</button>
+    <div class="vsep gm" style="display:flex"></div>
+    <button id="btn-fog" class="tb fog-mode gm" onclick="toggleFogMode()">+ Fog</button>
+    <button class="tb danger gm" onclick="clearAllFog()">Clear Fog</button>
+    <div id="bar-right">
+      <span id="pip-wrap"></span>
+      <span id="sid-lbl" onclick="copySid()" title="Click to copy session ID"></span>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="board">
+      <div id="empty-state">
+        <p>Awaiting the GM's map…</p>
+        <button class="tb gm" style="pointer-events:all" onclick="openMapModal()">Set Map URL</button>
+      </div>
+      <div id="board-wrap">
+        <img id="map-img" src="" style="display:none">
+        <div id="fog-layer"></div>
+        <div id="token-layer"></div>
+        <div id="ping-layer"></div>
+      </div>
+    </div>
+
+    <div id="panel">
+      <div id="info-pane">
+        <div id="info-header">
+          <span id="info-name"></span>
+          <button id="info-close" onclick="closeInfo()">✕</button>
+        </div>
+        <div id="info-sheet" style="display:none"><img id="info-sheet-img" src=""></div>
+        <div id="info-enemy" style="display:none"><strong id="info-enemy-name"></strong><span id="info-enemy-lore"></span></div>
+      </div>
+
+      <div id="panel-scroll">
+        <div class="ps">
+          <h3>🎲 Dice</h3>
+          <div class="dgrid">
+            <button class="db" onclick="roll(4)">d4</button>
+            <button class="db" onclick="roll(6)">d6</button>
+            <button class="db" onclick="roll(8)">d8</button>
+            <button class="db" onclick="roll(10)">d10</button>
+            <button class="db" onclick="roll(12)">d12</button>
+            <button class="db" onclick="roll(20)">d20</button>
+            <button class="db" onclick="roll(100)">d%</button>
+            <button class="db" onclick="rollExpr()">?d?</button>
+          </div>
+          <div class="mr">
+            <label>Qty</label><input id="qty" type="number" value="1" min="1" max="20">
+            <label style="margin-left:0.28rem">Mod</label><input id="mod" type="number" value="0" min="-99" max="99">
+          </div>
+          <div id="rlog"></div>
+        </div>
+
+        <div class="ps gm-b">
+          <h3>🪙 Tokens</h3>
+          <div id="tok-list"></div>
+          <button class="action-btn" onclick="openTokModal()">+ Add Token</button>
+        </div>
+
+        <div class="ps">
+          <h3>📍 Ping</h3>
+          <p class="ping-note">Double-click the map to ping a location. Everyone sees it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, remove, update, onDisconnect, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let db;
+let sid='', myId=Math.random().toString(36).slice(2,10), myName='', isGM=false;
+let scale=1, panX=0, panY=0;
+let panning=false, pSX=0, pSY=0, pOX=0, pOY=0;
+let tokens={}, selTok=null, dragId=null, dOX=0, dOY=0, mapW=0, mapH=0;
+let fogs={}, selFog=null, fogMode=false;
+let fogDrag=null, fogDragOX=0, fogDragOY=0;
+let fogResize=null, fogResizeSW=0, fogResizeSH=0, fogResizeMX=0, fogResizeMY=0;
+let fogDrawing=false, fogDrawId=null, fogDrawSX=0, fogDrawSY=0;
+const shownPings=new Set();
+
+let tokRef, rollRef, mapRef, presRef, pingRef, fogRef;
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const loadCfg=()=>{try{return JSON.parse(localStorage.getItem('vtt5-cfg')||'null');}catch{return null;}};
+window.openCfg=()=>{
+  const c=loadCfg()||{};
+  document.getElementById('c-key').value=c.apiKey||'';
+  document.getElementById('c-auth').value=c.authDomain||'';
+  document.getElementById('c-db').value=c.databaseURL||'';
+  document.getElementById('c-pid').value=c.projectId||'';
+  document.getElementById('cfg-modal').classList.add('open');
+};
+window.closeCfg=()=>document.getElementById('cfg-modal').classList.remove('open');
+window.saveCfg=()=>{
+  const c={apiKey:document.getElementById('c-key').value.trim(),authDomain:document.getElementById('c-auth').value.trim(),databaseURL:document.getElementById('c-db').value.trim(),projectId:document.getElementById('c-pid').value.trim()};
+  if(!c.databaseURL){toast('Database URL required');return;}
+  localStorage.setItem('vtt5-cfg',JSON.stringify(c));closeCfg();toast('Config saved');
+};
+
+// ── ENTER ─────────────────────────────────────────────────────────────────────
+window.enter=async()=>{
+  myName=document.getElementById('inp-name').value.trim();
+  const role=document.getElementById('inp-role').value;
+  sid=document.getElementById('inp-sid').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-')||'default';
+  if(!myName){toast('Enter your name');return;}
+  const cfg=loadCfg();
+  if(!cfg?.databaseURL){toast('Configure Firebase first');openCfg();return;}
+  isGM=role==='gm';
+  try{const app=initializeApp(cfg,'v'+myId);db=getDatabase(app);}
+  catch(e){toast('Firebase: '+e.message);return;}
+  if(isGM)document.body.classList.add('is-gm');
+
+  tokRef  =ref(db,`s/${sid}/tokens`);
+  rollRef =ref(db,`s/${sid}/rolls`);
+  mapRef  =ref(db,`s/${sid}/map`);
+  presRef =ref(db,`s/${sid}/pres/${myId}`);
+  pingRef =ref(db,`s/${sid}/pings`);
+  fogRef  =ref(db,`s/${sid}/fogs`);
+
+  await set(presRef,{name:myName,ts:serverTimestamp()});
+  onDisconnect(presRef).remove();
+
+  onValue(ref(db,`s/${sid}/pres`),snap=>{
+    const p=snap.val()||{};
+    document.getElementById('pip-wrap').innerHTML=Object.values(p).map(x=>`<span class="pip" title="${x.name}"></span>`).join('');
+  });
+  onValue(mapRef,snap=>{const d=snap.val();d?applyMap(d):clearMapLocal();});
+  onValue(tokRef,snap=>{tokens=snap.val()||{};renderTokens();renderTokList();});
+  onValue(rollRef,snap=>{renderRolls(Object.values(snap.val()||{}).sort((a,b)=>a.ts-b.ts));});
+  onValue(pingRef,snap=>{const p=snap.val()||{};Object.entries(p).forEach(([id,v])=>showPing(v.x,v.y,v.name,id));});
+  onValue(fogRef,snap=>{fogs=snap.val()||{};renderFogs();});
+
+  document.getElementById('setup').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('sid-lbl').textContent=sid;
+  document.getElementById('sdot').classList.add('ok');
+  initBoard();
+  toast(`Welcome, ${myName}`);
+};
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+window.openMapModal=()=>{
+  const current=document.getElementById('map-img').src;
+  document.getElementById('map-url-input').value=current&&current!==window.location.href?current:'';
+  document.getElementById('map-modal').classList.add('open');
+};
+window.closeMapModal=()=>document.getElementById('map-modal').classList.remove('open');
+
+window.setMap=async()=>{
+  const url=document.getElementById('map-url-input').value.trim();
+  if(!url){toast('Paste a map URL first');return;}
+  await set(mapRef,{url,ts:Date.now()});
+  closeMapModal();toast('Map loaded!');
+};
+
+function applyMap(d){
+  const img=document.getElementById('map-img');
+  img.src=d.url;img.style.display='block';
+  document.getElementById('empty-state').classList.add('gone');
+  img.onload=()=>{
+    mapW=img.naturalWidth;mapH=img.naturalHeight;
+    ['board-wrap','token-layer','fog-layer','ping-layer'].forEach(id=>{
+      document.getElementById(id).style.width=mapW+'px';
+      document.getElementById(id).style.height=mapH+'px';
+    });
+    fitToScreen();renderFogs();
+  };
+  img.onerror=()=>toast('Could not load map — check the URL');
+}
+
+function clearMapLocal(){
+  const img=document.getElementById('map-img');img.src='';img.style.display='none';
+  document.getElementById('empty-state').classList.remove('gone');
+}
+
+window.clearMap=async()=>{
+  if(!isGM)return;
+  await remove(mapRef);
+  toast('Map cleared');
+};
+
+function fitToScreen(){
+  const b=document.getElementById('board');
+  const s=Math.min(b.clientWidth/mapW,b.clientHeight/mapH,1)*0.92;
+  scale=s;panX=(b.clientWidth-mapW*s)/2;panY=(b.clientHeight-mapH*s)/2;
+  applyTransform();
+}
+
+// ── TOKENS ────────────────────────────────────────────────────────────────────
+window.updateTokTypeUI=(type)=>{
+  document.getElementById('tok-sheet-wrap').style.display=type==='pc'?'block':'none';
+  document.getElementById('tok-lore-wrap').style.display=type==='enemy'?'block':'none';
+};
+
+window.openTokModal=()=>{
+  document.getElementById('tok-modal-title').textContent='Add Token';
+  document.getElementById('tok-save-btn').textContent='Add Token';
+  document.getElementById('tok-name').value='';
+  document.getElementById('tok-type').value='pc';
+  document.getElementById('tok-img-url').value='';
+  document.getElementById('tok-sheet-url').value='';
+  document.getElementById('tok-lore').value='';
+  updateTokTypeUI('pc');
+  document.getElementById('tok-modal').classList.add('open');
+};
+window.closeTokModal=()=>document.getElementById('tok-modal').classList.remove('open');
+
+window.saveToken=async()=>{
+  if(!isGM)return;
+  const name=document.getElementById('tok-name').value.trim();
+  const type=document.getElementById('tok-type').value;
+  const imgUrl=document.getElementById('tok-img-url').value.trim();
+  const sheetUrl=document.getElementById('tok-sheet-url').value.trim();
+  const lore=document.getElementById('tok-lore').value.trim();
+  if(!name){toast('Enter a name');return;}
+  if(!imgUrl){toast('Paste a token image URL');return;}
+  const b=document.getElementById('board');
+  const cx=(b.clientWidth/2-panX)/scale, cy=(b.clientHeight/2-panY)/scale;
+  const id=push(tokRef).key;
+  await set(ref(db,`s/${sid}/tokens/${id}`),{name,type,url:imgUrl,sheetUrl,lore,x:cx,y:cy,size:70});
+  closeTokModal();toast(`${name} added`);
+};
+
+function renderTokens(){
+  const layer=document.getElementById('token-layer');
+  [...layer.querySelectorAll('.token')].forEach(el=>{if(!tokens[el.dataset.id])el.remove();});
+  Object.entries(tokens).forEach(([id,t])=>{
+    let el=document.getElementById('tok-'+id);
+    if(!el){
+      el=document.createElement('div');
+      el.className=`token type-${t.type}`;
+      el.id='tok-'+id;el.dataset.id=id;
+      el.innerHTML=`<img draggable="false"><div class="token-name"></div>`;
+      el.addEventListener('click',ev=>{if(dragId)return;showInfo(id);ev.stopPropagation();});
+      if(isGM){
+        el.addEventListener('mousedown',ev=>{
+          if(ev.button!==0)return;ev.stopPropagation();
+          selTok=id;renderTokens();renderTokList();
+          const pos=boardPos(ev.clientX,ev.clientY);
+          dOX=pos.x-tokens[id].x;dOY=pos.y-tokens[id].y;
+          dragId=id;el.classList.add('dragging');
+        });
+      }
+      layer.appendChild(el);
+    }
+    const size=t.size||70;
+    el.style.left=t.x+'px';el.style.top=t.y+'px';
+    el.style.width=size+'px';el.style.height=size+'px';
+    el.className=`token type-${t.type}`+(selTok===id?' highlighted':'');
+    el.querySelector('img').src=t.url||'';
+    el.querySelector('.token-name').textContent=t.name||'';
+  });
+}
+
+function renderTokList(){
+  const list=document.getElementById('tok-list');list.innerHTML='';
+  Object.entries(tokens).forEach(([id,t])=>{
+    const div=document.createElement('div');
+    div.className='tli'+(selTok===id?' sel':'');
+    div.innerHTML=`<img src="${t.url||''}"><span class="tli-name">${t.name}</span><span class="tli-type">${t.type==='pc'?'PC':'NPC'}</span><button class="tli-del">✕</button>`;
+    div.addEventListener('click',()=>{selTok=id;renderTokens();renderTokList();showInfo(id);});
+    div.querySelector('.tli-del').addEventListener('click',async ev=>{
+      ev.stopPropagation();
+      await remove(ref(db,`s/${sid}/tokens/${id}`));
+      if(selTok===id){selTok=null;closeInfo();}
+    });
+    list.appendChild(div);
+  });
+}
+
+// ── INFO PANE ─────────────────────────────────────────────────────────────────
+function showInfo(id){
+  const t=tokens[id];if(!t)return;
+  document.getElementById('info-pane').classList.add('open');
+  document.getElementById('info-name').textContent=t.name;
+  if(t.type==='pc'){
+    document.getElementById('info-sheet').style.display='block';
+    document.getElementById('info-enemy').style.display='none';
+    document.getElementById('info-sheet-img').src=t.sheetUrl||'';
+  } else {
+    document.getElementById('info-sheet').style.display='none';
+    document.getElementById('info-enemy').style.display='block';
+    document.getElementById('info-enemy-name').textContent=t.name;
+    document.getElementById('info-enemy-lore').textContent=t.lore||'No description.';
+  }
+}
+window.closeInfo=()=>document.getElementById('info-pane').classList.remove('open');
+
+// ── FOG ───────────────────────────────────────────────────────────────────────
+window.toggleFogMode=()=>{
+  fogMode=!fogMode;
+  document.getElementById('btn-fog').classList.toggle('active',fogMode);
+  toast(fogMode?'Click & drag to place fog':'Fog placement off');
+};
+window.clearAllFog=async()=>{if(!isGM)return;await remove(fogRef);toast('All fog cleared');};
+
+function renderFogs(){
+  const layer=document.getElementById('fog-layer');
+  [...layer.querySelectorAll('.fog-rect')].forEach(el=>{if(!fogs[el.dataset.id])el.remove();});
+  Object.entries(fogs).forEach(([id,f])=>{
+    let el=document.getElementById('fog-'+id);
+    if(!el){
+      el=document.createElement('div');
+      el.className='fog-rect';el.id='fog-'+id;el.dataset.id=id;
+      if(isGM){
+        const del=document.createElement('div');del.className='fog-del';del.textContent='✕';
+        del.addEventListener('click',async ev=>{ev.stopPropagation();await remove(ref(db,`s/${sid}/fogs/${id}`));if(selFog===id)selFog=null;});
+        el.appendChild(del);
+        const rh=document.createElement('div');rh.className='fog-resize';
+        rh.addEventListener('mousedown',ev=>{ev.stopPropagation();ev.preventDefault();fogResize=id;fogResizeSW=fogs[id].w;fogResizeSH=fogs[id].h;fogResizeMX=ev.clientX;fogResizeMY=ev.clientY;});
+        el.appendChild(rh);
+        el.addEventListener('mousedown',ev=>{
+          if(ev.button!==0||ev.target.classList.contains('fog-del')||ev.target.classList.contains('fog-resize'))return;
+          ev.stopPropagation();selFog=id;renderFogs();
+          fogDrag=id;const pos=boardPos(ev.clientX,ev.clientY);fogDragOX=pos.x-fogs[id].x;fogDragOY=pos.y-fogs[id].y;
+        });
+      }
+      layer.appendChild(el);
+    }
+    el.style.left=f.x+'px';el.style.top=f.y+'px';el.style.width=f.w+'px';el.style.height=f.h+'px';
+    el.classList.toggle('sel',selFog===id);
+  });
+}
+
+async function startFogDraw(cx,cy){
+  const pos=boardPos(cx,cy);fogDrawSX=pos.x;fogDrawSY=pos.y;
+  fogDrawId=push(fogRef).key;
+  await set(ref(db,`s/${sid}/fogs/${fogDrawId}`),{x:pos.x,y:pos.y,w:4,h:4});
+  fogDrawing=true;
+}
+async function updateFogDraw(cx,cy){
+  if(!fogDrawing||!fogDrawId)return;
+  const pos=boardPos(cx,cy);
+  const x=Math.min(fogDrawSX,pos.x),y=Math.min(fogDrawSY,pos.y);
+  const w=Math.abs(pos.x-fogDrawSX),h=Math.abs(pos.y-fogDrawSY);
+  const el=document.getElementById('fog-'+fogDrawId);
+  if(el){el.style.left=x+'px';el.style.top=y+'px';el.style.width=w+'px';el.style.height=h+'px';}
+  await update(ref(db,`s/${sid}/fogs/${fogDrawId}`),{x,y,w:Math.max(w,4),h:Math.max(h,4)});
+}
+async function endFogDraw(){
+  if(!fogDrawing)return;fogDrawing=false;
+  const f=fogs[fogDrawId];
+  if(f&&f.w<8&&f.h<8)await remove(ref(db,`s/${sid}/fogs/${fogDrawId}`));
+  fogDrawId=null;
+}
+
+// ── PINGS ─────────────────────────────────────────────────────────────────────
+function showPing(x,y,name,id){
+  if(shownPings.has(id))return;shownPings.add(id);
+  const layer=document.getElementById('ping-layer');
+  const dot=document.createElement('div');dot.className='ping-dot';dot.style.left=x+'px';dot.style.top=y+'px';
+  const lbl=document.createElement('div');lbl.className='ping-lbl';lbl.textContent=name;dot.appendChild(lbl);
+  layer.appendChild(dot);
+  setTimeout(async()=>{dot.remove();shownPings.delete(id);try{await remove(ref(db,`s/${sid}/pings/${id}`));}catch{}},2300);
+}
+async function firePing(cx,cy){
+  const pos=boardPos(cx,cy);
+  if(pos.x<0||pos.y<0||pos.x>mapW||pos.y>mapH)return;
+  const id=push(pingRef).key;
+  await set(ref(db,`s/${sid}/pings/${id}`),{x:pos.x,y:pos.y,name:myName,ts:Date.now()});
+}
+
+// ── BOARD EVENTS ──────────────────────────────────────────────────────────────
+function initBoard(){
+  const board=document.getElementById('board');
+  board.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const d=e.deltaY<0?1.1:0.9;
+    const r=board.getBoundingClientRect();
+    const mx=e.clientX-r.left,my=e.clientY-r.top;
+    const ns=Math.max(0.1,Math.min(8,scale*d));
+    panX=mx-(mx-panX)*(ns/scale);panY=my-(my-panY)*(ns/scale);scale=ns;
+    applyTransform();
+  },{passive:false});
+
+  board.addEventListener('mousedown',e=>{
+    if(e.button===1||e.button===2){e.preventDefault();panning=true;pSX=e.clientX;pSY=e.clientY;pOX=panX;pOY=panY;return;}
+    if(e.button===0&&isGM&&fogMode&&!e.target.closest('.token')&&!e.target.closest('.fog-rect')){startFogDraw(e.clientX,e.clientY);return;}
+    if(e.button===0&&!e.target.closest('.token')&&!e.target.closest('.fog-rect')){selFog=null;renderFogs();}
+  });
+
+  board.addEventListener('dblclick',e=>{
+    if(!e.target.closest('.token')&&!e.target.closest('.fog-rect')&&mapW>0)firePing(e.clientX,e.clientY);
+  });
+
+  board.addEventListener('contextmenu',e=>e.preventDefault());
+
+  document.addEventListener('mousemove',e=>{
+    if(panning){panX=pOX+(e.clientX-pSX);panY=pOY+(e.clientY-pSY);applyTransform();return;}
+    if(fogDrawing){updateFogDraw(e.clientX,e.clientY);return;}
+    if(fogResize){
+      const dx=(e.clientX-fogResizeMX)/scale,dy=(e.clientY-fogResizeMY)/scale;
+      const w=Math.max(20,fogResizeSW+dx),h=Math.max(20,fogResizeSH+dy);
+      const el=document.getElementById('fog-'+fogResize);
+      if(el){el.style.width=w+'px';el.style.height=h+'px';}
+      return;
+    }
+    if(fogDrag){
+      const pos=boardPos(e.clientX,e.clientY);
+      const el=document.getElementById('fog-'+fogDrag);
+      if(el){el.style.left=(pos.x-fogDragOX)+'px';el.style.top=(pos.y-fogDragOY)+'px';}
+      return;
+    }
+    if(dragId){
+      const pos=boardPos(e.clientX,e.clientY);
+      const el=document.getElementById('tok-'+dragId);
+      if(el){el.style.left=(pos.x-dOX)+'px';el.style.top=(pos.y-dOY)+'px';}
+    }
+  });
+
+  document.addEventListener('mouseup',async e=>{
+    if(panning){panning=false;return;}
+    if(fogDrawing){endFogDraw();return;}
+    if(fogResize){
+      const dx=(e.clientX-fogResizeMX)/scale,dy=(e.clientY-fogResizeMY)/scale;
+      await update(ref(db,`s/${sid}/fogs/${fogResize}`),{w:Math.max(20,fogResizeSW+dx),h:Math.max(20,fogResizeSH+dy)});
+      fogResize=null;return;
+    }
+    if(fogDrag){
+      const pos=boardPos(e.clientX,e.clientY);
+      await update(ref(db,`s/${sid}/fogs/${fogDrag}`),{x:pos.x-fogDragOX,y:pos.y-fogDragOY});
+      fogDrag=null;return;
+    }
+    if(dragId){
+      const pos=boardPos(e.clientX,e.clientY);
+      await update(ref(db,`s/${sid}/tokens/${dragId}`),{x:pos.x-dOX,y:pos.y-dOY});
+      const el=document.getElementById('tok-'+dragId);if(el)el.classList.remove('dragging');
+      dragId=null;
+    }
+  });
+}
+
+function applyTransform(){document.getElementById('board-wrap').style.transform=`translate(${panX}px,${panY}px) scale(${scale})`;}
+function boardPos(cx,cy){const r=document.getElementById('board').getBoundingClientRect();return{x:(cx-r.left-panX)/scale,y:(cy-r.top-panY)/scale};}
+
+// ── DICE ──────────────────────────────────────────────────────────────────────
+window.roll=async(sides)=>{
+  const qty=Math.max(1,parseInt(document.getElementById('qty').value)||1);
+  const mod=parseInt(document.getElementById('mod').value)||0;
+  const rolls=Array.from({length:qty},()=>Math.floor(Math.random()*sides)+1);
+  const total=rolls.reduce((a,b)=>a+b,0)+mod;
+  const crit=sides===20&&qty===1&&rolls[0]===20;
+  const fumble=sides===20&&qty===1&&rolls[0]===1;
+  await push(rollRef,{player:myName,dice:`${qty}d${sides}`,rolls,mod,total,crit,fumble,ts:Date.now()});
+};
+window.rollExpr=async()=>{
+  const expr=prompt('Dice expression (e.g. 2d6+3):');if(!expr)return;
+  const m=expr.match(/(\d+)d(\d+)([+-]\d+)?/i);
+  if(!m){toast('Invalid — try 2d6+3');return;}
+  document.getElementById('qty').value=m[1];document.getElementById('mod').value=parseInt(m[3]||'0');
+  roll(parseInt(m[2]));
+};
+function renderRolls(rolls){
+  const log=document.getElementById('rlog');log.innerHTML='';
+  [...rolls].reverse().slice(0,40).forEach(r=>{
+    const div=document.createElement('div');
+    div.className='re'+(r.crit?' crit':r.fumble?' fumble':'');
+    const ms=r.mod>0?`+${r.mod}`:r.mod<0?`${r.mod}`:'';
+    const flag=r.crit?' 🌟':r.fumble?' 💀':'';
+    div.innerHTML=`<span class="who">${r.player}</span> ${r.dice}${ms} → <span class="tot">${r.total}</span>${flag}<div class="brk">[${r.rolls.join(', ')}]${ms}</div>`;
+    log.appendChild(div);
+  });
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+window.copySid=()=>navigator.clipboard.writeText(sid).then(()=>toast('Session ID copied'));
+let toastT;
+window.toast=msg=>{const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2600);};
+</script>
+</body>
+</html>
