@@ -1934,22 +1934,35 @@ function structuredCloneSafe(obj){
 }
 
 function deepMerge(target, source){
-  if (!source || typeof source !== "object") return target;
+  if (source == null) return target;
+
+  // Arrays should replace entirely, not be recursively merged as objects
+  if (Array.isArray(source)) {
+    return structuredCloneSafe(source);
+  }
+
+  if (typeof source !== "object") {
+    return source;
+  }
+
+  if (!target || typeof target !== "object" || Array.isArray(target)) {
+    target = {};
+  }
+
   for (const key of Object.keys(source)) {
     const s = source[key];
-    if (s && typeof s === "object" && !Array.isArray(s)) {
-      if (!target[key] || typeof target[key] !== "object" || Array.isArray(target[key])) target[key] = {};
-      deepMerge(target[key], s);
+    const t = target[key];
+
+    if (Array.isArray(s)) {
+      target[key] = structuredCloneSafe(s);
+    } else if (s && typeof s === "object") {
+      target[key] = deepMerge(t, s);
     } else {
       target[key] = s;
     }
   }
-  return target;
-}
 
-function clamp(n, min, max){
-  n = Number(n) || 0;
-  return Math.max(min, Math.min(max, n));
+  return target;
 }
 
 function saveLocal(){
@@ -2441,14 +2454,27 @@ function renderResourceBlock(charId, resource){
 }
 
 function renderSpellSlots(charId){
-  const slots = APP_STATE.spells?.[charId]?.slots || {};
-  const levels = Object.keys(slots).sort((a, b) => Number(a) - Number(b));
+  const charSlots = CHARS[charId]?.spells?.slots || {};
+  const stateSlots = APP_STATE.spells?.[charId]?.slots || {};
+
+  // Build from character defaults so levels always exist and shape stays stable
+  const levels = Object.keys(charSlots).sort((a, b) => Number(a) - Number(b));
   if (!levels.length) return "";
 
   const rows = levels.map(level => {
-    const dots = slots[level].map((v, idx) => `
+    const fallback = Array.isArray(charSlots[level]) ? [...charSlots[level]] : [];
+    const raw = stateSlots[level];
+
+    const levelSlots = Array.isArray(raw)
+      ? raw
+      : (raw && typeof raw === "object"
+          ? fallback.map((_, i) => raw[i] ?? fallback[i])
+          : fallback);
+
+    const dots = levelSlots.map((v, idx) => `
       <div class="slot-dot ${v ? "" : "spent"}" onclick="toggleSpellSlot('${charId}', ${level}, ${idx})"></div>
     `).join("");
+
     return `
       <div class="slot-row">
         <div class="slot-label">L${level}</div>
@@ -2860,11 +2886,23 @@ window.toggleResource = function(charId, key){
 };
 
 window.toggleSpellSlot = function(charId, level, idx){
-  const slots = APP_STATE.spells?.[charId]?.slots?.[level];
-  if (!Array.isArray(slots) || slots[idx] == null) return;
-  const next = [...slots];
-  next[idx] = !next[idx];
-  window.CO.patch(`spells/${charId}/slots/${level}`, next);
+  const fallback = CHARS[charId]?.spells?.slots?.[level];
+  const raw = APP_STATE.spells?.[charId]?.slots?.[level];
+
+  let slots;
+  if (Array.isArray(raw)) {
+    slots = [...raw];
+  } else if (raw && typeof raw === "object" && Array.isArray(fallback)) {
+    slots = fallback.map((_, i) => raw[i] ?? fallback[i]);
+  } else if (Array.isArray(fallback)) {
+    slots = [...fallback];
+  } else {
+    return;
+  }
+
+  if (slots[idx] == null) return;
+  slots[idx] = !slots[idx];
+  window.CO.patch(`spells/${charId}/slots/${level}`, slots);
 };
 
 window.toggleConcentration = function(charId){
