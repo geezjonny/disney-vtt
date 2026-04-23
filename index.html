@@ -1,775 +1,3030 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VTT</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Beginner Party Sheet — 5.5e</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-
 :root{
-  --bg:#0d0b09;
-  --surface:#141210;
-  --border:rgba(180,130,60,0.2);
-  --gold:#b8822a;
-  --gold-hi:#dba84a;
-  --text:#e8dcc8;
-  --dim:#7a6a52;
-  --red:#7a1a1a;
-  --ping:#4fc3f7;
-  --fog:rgba(8,6,4,0.9);
+  --bg:#0b0e14;
+  --bg2:#121826;
+  --card:#171d2b;
+  --line:#283247;
+  --line2:#3a4968;
+  --text:#ece7dc;
+  --muted:#a7a09a;
+  --dim:#7b746d;
+  --gold:#d8b45a;
+  --green:#5ee38d;
+  --red:#ff6b6b;
+  --blue:#7cc9ff;
+  --violet:#b995ff;
+  --jasmine:#8dd8a6;
+  --wendy:#f5a15a;
+  --esmeralda:#d38dff;
+  --kristoff:#7fb0ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:radial-gradient(circle at 15% 10%, rgba(124,201,255,.04), transparent 35%),
+             radial-gradient(circle at 85% 90%, rgba(185,149,255,.04), transparent 35%),
+             var(--bg);
+  color:var(--text);
+  font-family:'Crimson Pro', Georgia, serif;
+  min-height:100vh;
+}
+button,input,textarea,select{
+  font:inherit;
+}
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:.5rem;
+  background:rgba(11,14,20,.96);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(8px);
+}
+.brand{
+  padding:.8rem 1rem;
+  font-family:'Cinzel',serif;
+  font-size:.78rem;
+  color:var(--blue);
+  border-right:1px solid var(--line);
+  white-space:nowrap;
+}
+#save-status{
+  margin-left:auto;
+  font-size:.65rem;
+  color:var(--muted);
+  padding:.3rem .8rem;
+  white-space:nowrap;
+}
+.tabs{
+  display:flex;
+  overflow-x:auto;
+  flex:1;
+}
+.tab{
+  background:none;
+  border:none;
+  border-right:1px solid var(--line);
+  border-bottom:2px solid transparent;
+  color:var(--dim);
+  cursor:pointer;
+  padding:.8rem .9rem;
+  font-family:'Cinzel',serif;
+  font-size:.62rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.tab:hover{color:var(--muted)}
+.tab.active{
+  color:var(--tab-color, var(--blue));
+  border-bottom-color:var(--tab-color, var(--blue));
 }
 
-body{background:var(--bg);color:var(--text);font-family:'IM Fell English',Georgia,serif;height:100vh;overflow:hidden;}
+.page{display:none}
+.page.active{display:block}
 
-/* ══ SETUP ══ */
-#setup{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 35%,#1e1408 0%,#060402 100%);}
-#setup h1{font-family:'Cinzel',serif;font-size:2.4rem;font-weight:700;color:var(--gold-hi);letter-spacing:0.18em;text-shadow:0 0 40px rgba(184,130,42,0.4);margin-bottom:0.1rem;}
-#setup .sub{font-style:italic;color:var(--dim);font-size:0.95rem;margin-bottom:2rem;letter-spacing:0.06em;}
+.overview-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  min-height:calc(100vh - 49px);
+}
+@media (max-width:1100px){
+  .overview-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:700px){
+  .overview-grid{grid-template-columns:1fr}
+}
 
-.card{background:#100e0b;border:1px solid var(--gold);width:400px;padding:1.8rem 2.2rem;position:relative;}
-.card::after{content:'';position:absolute;inset:4px;border:1px solid rgba(180,130,60,0.09);pointer-events:none;}
-.card h2{font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.22em;color:var(--gold);text-align:center;margin-bottom:1.5rem;text-transform:uppercase;}
+.col{
+  border-right:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+}
+.col:last-child{border-right:none}
 
-.f{margin-bottom:0.9rem;}
-.f label{display:block;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:0.28rem;}
-.f input,.f select,.f textarea{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:var(--text);font-family:'IM Fell English',serif;font-size:0.95rem;padding:0.48rem 0.65rem;outline:none;transition:border-color 0.15s;border-radius:1px;resize:vertical;}
-.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--gold);}
-.f select option{background:#100e0b;}
-.f .note{font-size:0.7rem;color:rgba(232,220,200,0.3);margin-top:0.22rem;font-style:italic;}
+.col-head{
+  padding:.9rem .8rem .7rem;
+  border-bottom:1px solid var(--line);
+  background:var(--head-bg, rgba(124,201,255,.05));
+  cursor:pointer;
+  position:sticky;
+  top:49px;
+  z-index:4;
+}
+.col-name{
+  font-family:'Cinzel',serif;
+  font-size:.82rem;
+  color:var(--accent);
+}
+.col-sub{
+  margin-top:.18rem;
+  font-size:.7rem;
+  color:var(--dim);
+  font-style:italic;
+}
+.hpbar{
+  height:4px;
+  background:var(--line);
+}
+.hpfill{
+  height:100%;
+  background:var(--accent);
+  transition:width .25s ease;
+}
+.block{
+  padding:.7rem .8rem;
+  border-bottom:1px solid var(--line);
+}
+.block-label{
+  font-family:'Cinzel',serif;
+  font-size:.48rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--dim);
+  margin-bottom:.4rem;
+}
+.hp-mini{
+  display:flex;
+  align-items:center;
+  gap:.35rem;
+  margin-bottom:.35rem;
+}
+.hp-mini input{
+  width:44px;
+  background:none;
+  border:none;
+  border-bottom:1px solid var(--line2);
+  color:var(--accent);
+  text-align:center;
+  font-family:'Cinzel',serif;
+  font-size:1rem;
+  outline:none;
+}
+.hp-mini .slash{color:var(--line2)}
+.hp-mini .max{color:var(--muted); font-size:.8rem}
+.temp-row{
+  display:flex; align-items:center; gap:.35rem; margin-bottom:.35rem;
+}
+.temp-row span{
+  font-family:'Cinzel',serif;
+  font-size:.52rem;
+  color:var(--violet);
+  letter-spacing:.08em;
+}
+.temp-row input{
+  width:42px;
+  background:none;
+  border:none;
+  border-bottom:1px solid rgba(185,149,255,.35);
+  color:var(--violet);
+  text-align:center;
+  outline:none;
+}
+.adjust-row{
+  display:flex; gap:.25rem;
+}
+.adjust-row input{
+  flex:1;
+  min-width:0;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:.3rem .45rem;
+  outline:none;
+}
+.btn{
+  background:none;
+  border:1px solid var(--line2);
+  color:var(--muted);
+  cursor:pointer;
+  padding:.3rem .5rem;
+  font-family:'Cinzel',serif;
+  font-size:.55rem;
+  letter-spacing:.06em;
+}
+.btn:hover{color:var(--text)}
+.btn.heal{border-color:rgba(94,227,141,.35); color:var(--green)}
+.btn.dmg{border-color:rgba(255,107,107,.35); color:var(--red)}
+.btn.small{
+  padding:.22rem .4rem;
+  font-size:.48rem;
+}
+.chips{
+  display:flex; flex-wrap:wrap; gap:.25rem; min-height:1.6rem;
+}
+.chip{
+  padding:.12rem .35rem;
+  border:1px solid rgba(255,107,107,.25);
+  background:rgba(255,107,107,.06);
+  color:var(--red);
+  font-family:'Cinzel',serif;
+  font-size:.42rem;
+  letter-spacing:.05em;
+}
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.3rem;
+}
+.stat-box{
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:.35rem .45rem;
+}
+.stat-k{
+  font-family:'Cinzel',serif;
+  font-size:.42rem;
+  color:var(--dim);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.stat-v{
+  margin-top:.1rem;
+  font-family:'Cinzel',serif;
+  font-size:.88rem;
+  color:var(--gold);
+}
+.detail-btn{
+  margin:.7rem .8rem .9rem;
+  width:calc(100% - 1.6rem);
+}
 
-.btn-p{width:100%;padding:0.68rem;font-family:'Cinzel',serif;font-size:0.76rem;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;border-radius:1px;background:linear-gradient(135deg,#7a1a1a,#561010);color:var(--text);border:1px solid #9a2a2a;transition:all 0.15s;margin-top:0.25rem;}
-.btn-p:hover{background:linear-gradient(135deg,#9a2020,#7a1a1a);transform:translateY(-1px);}
-.btn-g{width:100%;padding:0.56rem;font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;border-radius:1px;background:transparent;color:var(--gold);border:1px solid var(--border);transition:all 0.15s;margin-top:0.45rem;}
-.btn-g:hover{border-color:var(--gold);background:rgba(180,130,60,0.06);}
+.sheet{
+  max-width:980px;
+  margin:0 auto;
+  padding:1.1rem 1rem 4rem;
+}
+.sheet-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:1rem;
+  border-bottom:1px solid var(--line);
+  padding-bottom:1rem;
+  margin-bottom:1rem;
+}
+.sheet-title{
+  font-family:'Cinzel',serif;
+  font-size:clamp(1.1rem,3vw,1.6rem);
+  color:var(--accent);
+}
+.sheet-meta{
+  margin-top:.25rem;
+  font-size:.72rem;
+  color:var(--muted);
+  font-style:italic;
+}
+.sheet-pill{
+  border:1px solid var(--accent);
+  color:var(--accent);
+  font-family:'Cinzel',serif;
+  font-size:.58rem;
+  letter-spacing:.1em;
+  padding:.35rem .6rem;
+  white-space:nowrap;
+}
 
-/* ══ MODAL ══ */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:800;align-items:center;justify-content:center;}
-.overlay.open{display:flex;}
-.modal{background:#100e0b;border:1px solid var(--gold);padding:1.6rem 1.8rem;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto;border-radius:1px;box-shadow:0 20px 60px rgba(0,0,0,0.9);}
-.modal h3{font-family:'Cinzel',serif;color:var(--gold);font-size:0.88rem;letter-spacing:0.12em;margin-bottom:0.75rem;}
-.modal p{font-size:0.82rem;color:var(--dim);line-height:1.65;margin-bottom:0.9rem;font-style:italic;}
-.modal-btns{display:flex;gap:0.6rem;margin-top:1.1rem;}
-.modal-btns .btn-p,.modal-btns .btn-g{margin:0;}
+.sec{
+  background:var(--card);
+  border:1px solid var(--line);
+  margin-bottom:.8rem;
+  overflow:hidden;
+}
+.sec-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.5rem;
+  cursor:pointer;
+  background:var(--bg2);
+  border-bottom:1px solid var(--line);
+  padding:.55rem .8rem;
+}
+.sec-title{
+  font-family:'Cinzel',serif;
+  font-size:.62rem;
+  letter-spacing:.12em;
+  color:var(--blue);
+  text-transform:uppercase;
+}
+.sec-arrow{
+  color:var(--dim);
+  font-size:.55rem;
+  transition:transform .2s ease;
+}
+.sec.open .sec-arrow{transform:rotate(90deg)}
+.sec-body{display:none; padding:.8rem}
+.sec.open .sec-body{display:block}
 
-/* ══ APP ══ */
-#app{display:none;height:100vh;flex-direction:column;}
+.hp-big{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  flex-wrap:wrap;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:.65rem .75rem;
+}
+.hp-big input{
+  width:60px;
+  background:none;
+  border:none;
+  border-bottom:1px solid var(--line2);
+  color:var(--red);
+  font-family:'Cinzel',serif;
+  font-size:1.9rem;
+  text-align:center;
+  outline:none;
+}
+.hp-big .slash{font-size:1.2rem; color:var(--line2)}
+.hp-big .max{font-family:'Cinzel',serif; color:var(--muted)}
+.hp-big .temp-wrap{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+}
+.hp-big .temp-wrap span{
+  font-family:'Cinzel',serif;
+  font-size:.48rem;
+  color:var(--violet);
+  letter-spacing:.1em;
+}
+.hp-big .temp-wrap input{
+  width:44px;
+  font-size:1rem;
+  color:var(--violet);
+  border-bottom:1px solid rgba(185,149,255,.35);
+}
+.hp-note{
+  margin-top:.45rem;
+  font-size:.8rem;
+  color:var(--dim);
+  font-style:italic;
+}
+.control-row{
+  display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.55rem;
+}
+.control-row input{
+  width:70px;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:.28rem .45rem;
+  outline:none;
+}
+.ds-row{
+  display:flex; flex-wrap:wrap; gap:1rem; margin-top:.8rem; align-items:center;
+}
+.ds-group{
+  display:flex; align-items:center; gap:.45rem;
+}
+.ds-label{
+  font-family:'Cinzel',serif;
+  font-size:.5rem;
+  color:var(--dim);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.ds-dots{display:flex; gap:.22rem}
+.ds-dot{
+  width:18px; height:18px; border-radius:50%;
+  border:1px solid var(--line2);
+  background:var(--bg);
+  cursor:pointer;
+}
+.ds-dot.success.on{background:var(--green); border-color:var(--green)}
+.ds-dot.fail.on{background:var(--red); border-color:var(--red)}
+.inspiration{
+  background:none;
+  border:1px solid var(--line2);
+  color:var(--muted);
+  cursor:pointer;
+  padding:.28rem .6rem;
+  font-family:'Cinzel',serif;
+  font-size:.5rem;
+  letter-spacing:.08em;
+}
+.inspiration.on{
+  border-color:var(--gold);
+  color:var(--gold);
+  background:rgba(216,180,90,.06);
+}
 
-#bar{height:40px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 0.7rem;gap:0.45rem;z-index:30;}
-.logo{font-family:'Cinzel',serif;font-size:0.76rem;color:var(--gold);letter-spacing:0.16em;white-space:nowrap;margin-right:0.2rem;}
-.vsep{width:1px;height:17px;background:var(--border);flex-shrink:0;}
-.tb{background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.09em;padding:0.2rem 0.5rem;border-radius:1px;cursor:pointer;white-space:nowrap;transition:all 0.12s;text-transform:uppercase;}
-.tb:hover{border-color:var(--gold);color:var(--gold-hi);background:rgba(180,130,60,0.06);}
-.tb.active{border-color:var(--gold);color:var(--gold-hi);background:rgba(180,130,60,0.1);}
-.tb.danger{border-color:rgba(122,26,26,0.38);color:#a05050;}
-.tb.danger:hover{border-color:var(--red);color:#ff8888;background:rgba(122,26,26,0.12);}
-.tb.fog-mode{border-color:rgba(80,100,160,0.4);color:#9999cc;}
-.tb.fog-mode.active{border-color:#9999cc;color:#ccccee;background:rgba(80,100,160,0.15);}
+.resource-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:.5rem;
+}
+.resource{
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:.55rem .65rem;
+}
+.resource-label{
+  font-family:'Cinzel',serif;
+  font-size:.5rem;
+  color:var(--dim);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:.35rem;
+}
+.pips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.3rem;
+}
+.pip{
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--line2);
+  background:rgba(124,201,255,.08);
+  color:var(--blue);
+  cursor:pointer;
+  font-family:'Cinzel',serif;
+  font-size:.62rem;
+}
+.pip.spent{
+  background:var(--bg);
+  color:transparent;
+  border-color:var(--line);
+}
+.resource-note{
+  margin-top:.35rem;
+  font-size:.75rem;
+  color:var(--dim);
+  font-style:italic;
+  line-height:1.45;
+}
 
-#sdot{width:6px;height:6px;border-radius:50%;background:#333;flex-shrink:0;transition:all 0.3s;}
-#sdot.ok{background:#5aad5a;box-shadow:0 0 5px rgba(90,173,90,0.5);}
-#bar-right{margin-left:auto;display:flex;align-items:center;gap:0.5rem;}
-.pip{width:6px;height:6px;border-radius:50%;background:#5aad5a;box-shadow:0 0 4px rgba(90,173,90,0.4);display:inline-block;}
-#sid-lbl{font-size:0.72rem;color:rgba(180,130,60,0.4);cursor:pointer;padding:0.14rem 0.32rem;border:1px solid transparent;border-radius:1px;transition:all 0.15s;font-family:'IM Fell English',serif;}
-#sid-lbl:hover{border-color:var(--border);color:var(--gold);}
+.abilities{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:.35rem;
+}
+@media (max-width:700px){
+  .abilities{grid-template-columns:repeat(3,1fr)}
+}
+.ability{
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:.4rem .2rem;
+  text-align:center;
+}
+.ability .name{
+  font-family:'Cinzel',serif;
+  font-size:.44rem;
+  color:var(--dim);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.ability .score{
+  margin-top:.12rem;
+  font-family:'Cinzel',serif;
+  font-size:1.2rem;
+  color:var(--blue);
+}
+.ability .mod{
+  margin-top:.08rem;
+  font-family:'Cinzel',serif;
+  font-size:.68rem;
+  color:var(--gold);
+}
+.combat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:.35rem;
+  margin-top:.5rem;
+}
+.combat{
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:.45rem;
+  text-align:center;
+}
+.combat .k{
+  font-family:'Cinzel',serif;
+  font-size:.46rem;
+  color:var(--dim);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.combat .v{
+  margin-top:.15rem;
+  font-family:'Cinzel',serif;
+  font-size:.95rem;
+  color:var(--blue);
+}
 
-.gm{display:none!important;}
-body.is-gm .gm{display:flex!important;}
-body.is-gm .gm-b{display:block!important;}
-.gm-b{display:none!important;}
+.attack-wrap{
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:.6rem .65rem;
+}
+.attack-label{
+  display:block;
+  font-family:'Cinzel',serif;
+  font-size:.5rem;
+  color:var(--dim);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:.3rem;
+}
+.attack-wrap select{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:.42rem .5rem;
+  outline:none;
+  margin-bottom:.5rem;
+}
+.attack-readout{
+  background:var(--bg);
+  border:1px solid var(--line);
+  padding:.55rem .6rem;
+  line-height:1.55;
+  font-size:.84rem;
+  color:var(--muted);
+}
+.attack-readout strong{color:var(--text)}
+.attack-tip{
+  margin-top:.4rem;
+  padding:.35rem .45rem;
+  background:rgba(94,227,141,.05);
+  border:1px solid rgba(94,227,141,.15);
+  border-left:2px solid rgba(94,227,141,.35);
+  color:var(--muted);
+  font-size:.76rem;
+  line-height:1.45;
+}
+.attack-tip strong{color:var(--green)}
 
-/* ══ LAYOUT ══ */
-#main{display:flex;flex:1;overflow:hidden;}
+.spell-slots{
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;
+  margin-bottom:.65rem;
+}
+.slot-row{
+  display:flex;
+  align-items:center;
+  gap:.35rem;
+  flex-wrap:wrap;
+}
+.slot-label{
+  font-family:'Cinzel',serif;
+  font-size:.5rem;
+  color:var(--violet);
+  letter-spacing:.08em;
+  min-width:30px;
+}
+.slot-dot{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  border:1px solid rgba(185,149,255,.4);
+  background:rgba(185,149,255,.1);
+  cursor:pointer;
+}
+.slot-dot.spent{
+  background:var(--bg);
+  border-color:var(--line);
+}
+.conc-toggle{
+  display:inline-block;
+  margin-top:.2rem;
+  padding:.18rem .42rem;
+  border:1px solid rgba(94,227,141,.22);
+  color:var(--green);
+  font-family:'Cinzel',serif;
+  font-size:.48rem;
+  letter-spacing:.08em;
+  cursor:pointer;
+  opacity:.55;
+}
+.conc-toggle.on{opacity:1}
 
-#board{flex:1;position:relative;overflow:hidden;background:#080604;cursor:default;}
-#board-wrap{position:absolute;transform-origin:0 0;}
-#map-img{display:block;position:relative;z-index:1;pointer-events:none;user-select:none;}
-#token-layer{position:absolute;top:0;left:0;z-index:50;}
-#fog-layer{position:absolute;top:0;left:0;z-index:40;pointer-events:none;}
-#ping-layer{position:absolute;top:0;left:0;z-index:60;pointer-events:none;}
-body.is-gm #fog-layer{pointer-events:all;}
+.note-box{
+  width:100%;
+  min-height:100px;
+  resize:vertical;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:.55rem;
+  outline:none;
+  line-height:1.5;
+}
+.note-box::placeholder{
+  color:var(--dim);
+  font-style:italic;
+}
 
-#empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;pointer-events:none;}
-#empty-state.gone{display:none;}
-#empty-state p{font-family:'Cinzel',serif;font-size:0.82rem;color:rgba(180,130,60,0.22);letter-spacing:0.14em;}
+.list{
+  display:grid;
+  gap:.28rem;
+}
+.row{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  padding:.28rem .4rem;
+  border:1px solid transparent;
+}
+.row:hover{background:var(--bg2)}
+.row .dot{
+  width:8px; height:8px; border-radius:50%;
+  border:1px solid var(--line2);
+  background:var(--bg);
+}
+.row.prof .dot{background:var(--blue); border-color:var(--blue)}
+.row .left{
+  flex:1;
+  color:var(--muted);
+}
+.row .right{
+  font-family:'Cinzel',serif;
+  color:var(--text);
+  font-size:.78rem;
+}
 
-/* ══ TOKENS ══ */
-.token{position:absolute;transform:translate(-50%,-50%);z-index:10;user-select:none;}
-.token img{width:100%;height:100%;object-fit:cover;border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 2px 10px rgba(0,0,0,0.8);display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
-.token-name{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:0.5rem;letter-spacing:0.05em;white-space:nowrap;color:#fff;text-shadow:0 0 4px #000,0 1px 4px #000;pointer-events:none;}
-.token.type-pc img{border-color:rgba(100,180,255,0.7);}
-.token.type-enemy img{border-color:rgba(220,80,80,0.7);}
-body.is-gm .token{cursor:grab;}
-body.is-gm .token:hover img{box-shadow:0 0 0 2px var(--gold),0 2px 12px rgba(0,0,0,0.8);}
-body.is-gm .token.dragging{cursor:grabbing;opacity:0.75;z-index:100;}
+.spell-list{display:grid; gap:.35rem}
+.spell{
+  border:1px solid var(--line);
+  background:var(--bg2);
+}
+.spell-head{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  padding:.42rem .55rem;
+  cursor:pointer;
+}
+.spell-badge{
+  font-family:'Cinzel',serif;
+  font-size:.46rem;
+  padding:.08rem .28rem;
+  border:1px solid var(--line2);
+  color:var(--blue);
+  white-space:nowrap;
+}
+.spell-name{
+  flex:1;
+  color:var(--text);
+  font-size:.88rem;
+}
+.spell-tags{
+  display:flex; gap:.25rem; flex-wrap:wrap;
+}
+.tag{
+  font-family:'Cinzel',serif;
+  font-size:.44rem;
+  color:var(--dim);
+}
+.spell-arrow{
+  color:var(--dim);
+  font-size:.52rem;
+  transition:transform .2s ease;
+}
+.spell.open .spell-arrow{transform:rotate(90deg)}
+.spell-body{
+  display:none;
+  border-top:1px solid var(--line);
+  padding:.55rem .65rem .65rem;
+}
+.spell.open .spell-body{display:block}
+.spell-meta{
+  display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.45rem;
+}
+.meta{
+  background:var(--bg);
+  border:1px solid var(--line);
+  padding:.15rem .35rem;
+}
+.meta .k{
+  font-family:'Cinzel',serif;
+  font-size:.42rem;
+  color:var(--dim);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.meta .v{
+  margin-top:.04rem;
+  font-size:.74rem;
+  color:var(--muted);
+}
+.spell-desc{
+  font-size:.84rem;
+  color:var(--muted);
+  line-height:1.55;
+}
+.spell-desc strong{color:var(--text)}
 
-/* ══ FOG ══ */
-.fog-rect{position:absolute;background:var(--fog);border:1px solid rgba(255,255,255,0.04);z-index:3;border-radius:2px;}
-body.is-gm .fog-rect{cursor:move;}
-body.is-gm .fog-rect:hover{border-color:rgba(150,150,200,0.3);}
-body.is-gm .fog-rect.sel{border-color:rgba(150,150,220,0.6);box-shadow:0 0 0 1px rgba(150,150,220,0.3);}
-.fog-del{position:absolute;top:-8px;right:-8px;width:16px;height:16px;border-radius:50%;background:#7a1a1a;color:#fff;display:none;align-items:center;justify-content:center;font-size:0.6rem;cursor:pointer;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.6);}
-.fog-rect.sel .fog-del{display:flex;}
-.fog-resize{position:absolute;bottom:-5px;right:-5px;width:12px;height:12px;background:rgba(150,150,220,0.7);border-radius:2px;cursor:se-resize;display:none;z-index:10;}
-.fog-rect.sel .fog-resize{display:block;}
+.prep-wrap{
+  margin-bottom:.8rem;
+}
+.prep-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.5rem;
+  margin-bottom:.45rem;
+}
+.prep-title{
+  font-family:'Cinzel',serif;
+  font-size:.54rem;
+  color:var(--gold);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.prep-count{
+  font-family:'Cinzel',serif;
+  font-size:.5rem;
+  color:var(--muted);
+}
+.prep-grid{
+  display:grid;
+  gap:.35rem;
+}
+.prep-card{
+  border:1px solid var(--line);
+  background:var(--bg2);
+}
+.prep-card.on{
+  border-color:rgba(216,180,90,.35);
+  box-shadow:inset 0 0 0 1px rgba(216,180,90,.08);
+}
+.prep-head{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding:.45rem .55rem;
+  border-bottom:1px solid var(--line);
+}
+.prep-check{
+  width:16px;
+  height:16px;
+  accent-color:#d8b45a;
+  cursor:pointer;
+}
+.prep-name{
+  flex:1;
+  color:var(--text);
+  font-size:.84rem;
+}
+.prep-mini{
+  font-family:'Cinzel',serif;
+  font-size:.44rem;
+  color:var(--dim);
+}
+.prep-body{
+  padding:.45rem .55rem .55rem;
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.prep-body strong{color:var(--text)}
+.prep-help{
+  margin-top:.35rem;
+  font-size:.74rem;
+  color:var(--dim);
+  font-style:italic;
+}
+.prep-lock{
+  opacity:.75;
+}
 
-/* ══ PINGS ══ */
-.ping-dot{position:absolute;transform:translate(-50%,-50%);pointer-events:none;animation:pfade 2s ease-out forwards;}
-.ping-dot::before{content:'';position:absolute;border-radius:50%;background:var(--ping);box-shadow:0 0 12px var(--ping);animation:pcore 2s ease-out forwards;}
-.ping-dot::after{content:'';position:absolute;border-radius:50%;border:2px solid var(--ping);animation:pring 2s ease-out forwards;}
-@keyframes pfade{0%{opacity:1}75%{opacity:1}100%{opacity:0}}
-@keyframes pcore{0%{width:14px;height:14px;top:-7px;left:-7px}100%{width:8px;height:8px;top:-4px;left:-4px}}
-@keyframes pring{0%{width:14px;height:14px;top:-7px;left:-7px;opacity:0.9}100%{width:70px;height:70px;top:-35px;left:-35px;opacity:0}}
-.ping-lbl{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:0.48rem;color:var(--ping);white-space:nowrap;text-shadow:0 0 4px #000;letter-spacing:0.06em;}
 
-/* ══ PANEL ══ */
-#panel{width:260px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-#info-pane{flex-shrink:0;border-bottom:1px solid var(--border);display:none;flex-direction:column;max-height:55%;overflow:hidden;}
-#info-pane.open{display:flex;}
-#info-header{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.75rem 0.45rem;flex-shrink:0;}
-#info-name{font-family:'Cinzel',serif;font-size:0.78rem;color:var(--gold-hi);letter-spacing:0.08em;}
-#info-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.9rem;line-height:1;padding:0.1rem 0.3rem;transition:color 0.12s;}
-#info-close:hover{color:var(--text);}
-#info-sheet{flex:1;overflow:auto;padding:0 0.5rem 0.5rem;}
-#info-sheet img{width:100%;border-radius:2px;border:1px solid var(--border);}
-#info-enemy{padding:0 0.75rem 0.75rem;font-size:0.82rem;line-height:1.65;font-style:italic;color:rgba(232,220,200,0.7);}
-#info-enemy strong{display:block;font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.08em;color:var(--gold);margin-bottom:0.35rem;font-style:normal;}
+.helper{
+  margin-bottom:.55rem;
+  padding:.45rem .55rem;
+  background:rgba(94,227,141,.05);
+  border:1px solid rgba(94,227,141,.14);
+  border-left:2px solid rgba(94,227,141,.35);
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.helper strong{color:var(--green)}
 
-#panel-scroll{flex:1;overflow-y:auto;}
-#panel-scroll::-webkit-scrollbar{width:3px;}
-#panel-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-.ps{padding:0.8rem;border-bottom:1px solid var(--border);}
-.ps h3{font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.65rem;}
+.warn{
+  margin-bottom:.55rem;
+  padding:.45rem .55rem;
+  background:rgba(255,107,107,.05);
+  border:1px solid rgba(255,107,107,.14);
+  border-left:2px solid rgba(255,107,107,.35);
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.warn strong{color:var(--red)}
 
-/* Dice */
-.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.26rem;margin-bottom:0.5rem;}
-.db{background:rgba(122,26,26,0.1);border:1px solid rgba(122,26,26,0.26);color:var(--dim);font-family:'Cinzel',serif;font-size:0.63rem;padding:0.35rem 0.1rem;border-radius:1px;cursor:pointer;text-align:center;transition:all 0.12s;}
-.db:hover{background:rgba(122,26,26,0.3);border-color:#7a1a1a;color:#ffaaaa;transform:translateY(-1px);}
-.db:active{transform:none;}
-.mr{display:flex;align-items:center;gap:0.32rem;margin-bottom:0.45rem;}
-.mr label{font-family:'Cinzel',serif;font-size:0.56rem;letter-spacing:0.08em;color:var(--dim);white-space:nowrap;}
-.mr input{width:44px;background:rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--text);font-family:'IM Fell English',serif;font-size:0.86rem;padding:0.2rem 0.35rem;border-radius:1px;outline:none;}
-.mr input:focus{border-color:var(--gold);}
-#rlog{height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:0.2rem;}
-#rlog::-webkit-scrollbar{width:3px;}
-#rlog::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-.re{font-size:0.74rem;padding:0.2rem 0.38rem;background:rgba(0,0,0,0.18);border-left:2px solid transparent;line-height:1.45;animation:si 0.18s ease;}
-@keyframes si{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-.re.crit{border-left-color:var(--gold-hi);}
-.re.fumble{border-left-color:var(--red);}
-.re .who{font-family:'Cinzel',serif;font-size:0.58rem;color:var(--gold);}
-.re .tot{font-size:0.94rem;font-weight:bold;color:var(--gold-hi);margin-left:0.12rem;}
-.re .brk{font-size:0.64rem;color:rgba(232,220,200,0.3);}
+.rest-row{
+  display:flex;
+  gap:.45rem;
+  margin-top:.8rem;
+}
+.rest-btn{
+  flex:1;
+  background:none;
+  border:1px solid var(--line2);
+  color:var(--muted);
+  cursor:pointer;
+  padding:.5rem;
+  font-family:'Cinzel',serif;
+  font-size:.56rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.rest-btn:hover{color:var(--text)}
+.rest-btn.short{border-color:rgba(124,201,255,.3); color:var(--blue)}
+.rest-btn.long{border-color:rgba(216,180,90,.3); color:var(--gold)}
 
-/* Token list */
-#tok-list{display:flex;flex-direction:column;gap:0.25rem;margin-bottom:0.45rem;}
-.tli{display:flex;align-items:center;gap:0.4rem;padding:0.28rem 0.4rem;background:rgba(0,0,0,0.16);border:1px solid transparent;border-radius:1px;cursor:pointer;transition:all 0.12s;}
-.tli:hover{border-color:var(--border);}
-.tli.sel{border-color:var(--gold);background:rgba(180,130,60,0.07);}
-.tli img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
-.tli-name{font-family:'Cinzel',serif;font-size:0.6rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.tli-type{font-size:0.55rem;color:var(--dim);font-family:'Cinzel',serif;flex-shrink:0;}
-.tli-del{background:none;border:none;color:#884444;cursor:pointer;font-size:0.75rem;padding:0.08rem 0.2rem;opacity:0;transition:opacity 0.12s;line-height:1;}
-.tli:hover .tli-del{opacity:1;}
+.conditions-page{
+  max-width:980px;
+  margin:0 auto;
+  padding:1.1rem 1rem 4rem;
+}
+.conditions-head{
+  font-family:'Cinzel',serif;
+  font-size:.7rem;
+  color:var(--blue);
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  margin-bottom:.35rem;
+}
+.conditions-sub{
+  color:var(--muted);
+  font-size:.86rem;
+  font-style:italic;
+  margin-bottom:1rem;
+}
+.conditions-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:.65rem;
+}
+.cond{
+  background:var(--card);
+  border:1px solid var(--line);
+}
+.cond-head{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  padding:.55rem .7rem;
+  background:var(--bg2);
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+}
+.cond-name{
+  flex:1;
+  font-family:'Cinzel',serif;
+  font-size:.68rem;
+  letter-spacing:.05em;
+}
+.cond-save{
+  font-size:.58rem;
+  color:var(--dim);
+  font-style:italic;
+}
+.cond-arrow{
+  color:var(--dim);
+  font-size:.52rem;
+  transition:transform .2s ease;
+}
+.cond.open .cond-arrow{transform:rotate(90deg)}
+.cond-body{
+  display:none;
+  padding:.65rem .7rem;
+}
+.cond.open .cond-body{display:block}
+.cond-mech{
+  font-size:.82rem;
+  color:var(--muted);
+  line-height:1.5;
+  margin-bottom:.45rem;
+}
+.cond-player{
+  background:var(--bg2);
+  border:1px solid var(--line);
+  border-left:2px solid var(--blue);
+  padding:.4rem .5rem;
+}
+.cond-player-label{
+  font-family:'Cinzel',serif;
+  font-size:.46rem;
+  color:var(--blue);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:.2rem;
+}
+.cond-player-text{
+  font-size:.8rem;
+  color:var(--muted);
+  line-height:1.45;
+}
+.cond-end{
+  margin-top:.4rem;
+  background:rgba(94,227,141,.05);
+  border:1px solid rgba(94,227,141,.12);
+  border-left:2px solid rgba(94,227,141,.35);
+  padding:.35rem .5rem;
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.45;
+}
+.cond-end strong{color:var(--green)}
 
-.action-btn{display:block;width:100%;padding:0.35rem;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;text-align:center;color:var(--gold);border:1px solid var(--border);border-radius:1px;cursor:pointer;transition:all 0.12s;margin-bottom:0.28rem;background:transparent;}
-.action-btn:hover{border-color:var(--gold);background:rgba(180,130,60,0.07);}
-
-.ping-note{font-size:0.7rem;font-style:italic;color:var(--dim);line-height:1.6;opacity:0.8;}
-
-#toast{position:fixed;bottom:1.1rem;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,8,6,0.97);border:1px solid var(--gold);color:var(--text);font-family:'Cinzel',serif;font-size:0.66rem;letter-spacing:0.1em;padding:0.45rem 1.1rem;border-radius:1px;box-shadow:0 4px 18px rgba(0,0,0,0.6);z-index:9999;transition:transform 0.22s;white-space:nowrap;}
-#toast.show{transform:translateX(-50%) translateY(0);}
+.footer-space{height:20px}
 </style>
 </head>
 <body>
 
-<!-- SETUP -->
-<div id="setup">
-  <h1>VTT</h1>
-  <p class="sub">simple · persistent · browser-based</p>
-  <div class="card">
-    <h2>Join the Table</h2>
-    <div class="f">
-      <label>Your Name</label>
-      <input id="inp-name" type="text" placeholder="Thorin..." maxlength="24">
-    </div>
-    <div class="f">
-      <label>Role</label>
-      <select id="inp-role">
-        <option value="player">Player</option>
-        <option value="gm">Game Master</option>
-      </select>
-    </div>
-    <div class="f">
-      <label>Session ID</label>
-      <input id="inp-sid" type="text" placeholder="avernus-campaign" maxlength="40">
-      <div class="note">Everyone uses the same ID — opens to whatever the GM last loaded</div>
-    </div>
-    <button class="btn-p" onclick="enter()">Enter</button>
-    <button class="btn-g" onclick="openCfg()">⚙ Firebase Config</button>
+<nav class="topbar">
+  <div class="brand">Beginner Party Sheet</div>
+  <div id="save-status">LOCAL</div>
+  <div class="tabs">
+    <button class="tab active" style="--tab-color:var(--blue)" onclick="showPage('overview', this)">Party</button>
+    <button class="tab" style="--tab-color:var(--jasmine)" onclick="showPage('jasmine', this)">Jasmine</button>
+    <button class="tab" style="--tab-color:var(--wendy)" onclick="showPage('wendy', this)">Wendy</button>
+    <button class="tab" style="--tab-color:var(--esmeralda)" onclick="showPage('esmeralda', this)">Esmeralda</button>
+    <button class="tab" style="--tab-color:var(--kristoff)" onclick="showPage('kristoff', this)">Kristoff</button>
+    <button class="tab" style="--tab-color:var(--muted)" onclick="showPage('conditions', this)">Conditions</button>
   </div>
+</nav>
+
+<!-- PARTY OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="overview-grid" id="overview-grid"></div>
 </div>
 
-<!-- FIREBASE CONFIG MODAL -->
-<div class="overlay" id="cfg-modal">
-  <div class="modal">
-    <h3>⚙ Firebase Config</h3>
-    <p>Free project at console.firebase.google.com → enable Realtime Database (test mode) → Project Settings → Web App → copy values below. No Storage needed.</p>
-    <div class="f"><label>API Key</label><input id="c-key" type="text" placeholder="AIzaSy..."></div>
-    <div class="f"><label>Auth Domain</label><input id="c-auth" type="text" placeholder="project.firebaseapp.com"></div>
-    <div class="f"><label>Database URL</label><input id="c-db" type="text" placeholder="https://project-rtdb.firebaseio.com"><div class="note">Realtime Database → Data tab</div></div>
-    <div class="f"><label>Project ID</label><input id="c-pid" type="text" placeholder="project-12345"></div>
-    <div class="modal-btns">
-      <button class="btn-p" onclick="saveCfg()">Save</button>
-      <button class="btn-g" onclick="closeCfg()">Cancel</button>
-    </div>
+<!-- CHARACTER PAGES -->
+<div class="page" id="page-jasmine"></div>
+<div class="page" id="page-wendy"></div>
+<div class="page" id="page-esmeralda"></div>
+<div class="page" id="page-kristoff"></div>
+
+<!-- CONDITIONS -->
+<div class="page" id="page-conditions">
+  <div class="conditions-page">
+    <div class="conditions-head">Common Conditions</div>
+    <div class="conditions-sub">Beginner version: what it means, what you actually do, and how to end it.</div>
+    <div class="conditions-grid" id="conditions-grid"></div>
   </div>
 </div>
-
-<!-- ADD/EDIT TOKEN MODAL -->
-<div class="overlay" id="tok-modal">
-  <div class="modal">
-    <h3 id="tok-modal-title">Add Token</h3>
-    <div class="f">
-      <label>Name</label>
-      <input id="tok-name" type="text" placeholder="Merregon..." maxlength="30">
-    </div>
-    <div class="f">
-      <label>Type</label>
-      <select id="tok-type" onchange="updateTokTypeUI(this.value)">
-        <option value="pc">Player Character (PC)</option>
-        <option value="enemy">Enemy / NPC</option>
-      </select>
-    </div>
-    <div class="f">
-      <label>Token Image URL</label>
-      <input id="tok-img-url" type="text" placeholder="https://yourusername.github.io/vtt/tokens/fighter.png">
-      <div class="note">Upload the image to your GitHub repo /tokens folder first</div>
-    </div>
-    <div class="f" id="tok-sheet-wrap">
-      <label>Character Sheet Image URL</label>
-      <input id="tok-sheet-url" type="text" placeholder="https://yourusername.github.io/vtt/sheets/thorin.png">
-      <div class="note">Players see this when they click the token</div>
-    </div>
-    <div class="f" id="tok-lore-wrap" style="display:none">
-      <label>Description</label>
-      <textarea id="tok-lore" rows="3" placeholder="A merregon, soldier of Avernus. Follows its master's will without question."></textarea>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-p" id="tok-save-btn" onclick="saveToken()">Add Token</button>
-      <button class="btn-g" onclick="closeTokModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- SET MAP MODAL -->
-<div class="overlay" id="map-modal">
-  <div class="modal">
-    <h3>Set Map</h3>
-    <p>Upload your map image to the /maps folder in your GitHub repo, then paste the URL below.</p>
-    <div class="f">
-      <label>Map Image URL</label>
-      <input id="map-url-input" type="text" placeholder="https://yourusername.github.io/vtt/maps/dungeon.png">
-    </div>
-    <div class="modal-btns">
-      <button class="btn-p" onclick="setMap()">Load Map</button>
-      <button class="btn-g" onclick="closeMapModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app">
-  <div id="bar">
-    <span class="logo">⚔ VTT</span>
-    <div class="vsep"></div>
-    <div id="sdot"></div>
-    <button class="tb gm" onclick="openMapModal()">Set Map</button>
-    <button class="tb danger gm" onclick="clearMap()">Clear Map</button>
-    <div class="vsep gm" style="display:flex"></div>
-    <button id="btn-fog" class="tb fog-mode gm" onclick="toggleFogMode()">+ Fog</button>
-    <button class="tb danger gm" onclick="clearAllFog()">Clear Fog</button>
-    <div id="bar-right">
-      <span id="pip-wrap"></span>
-      <span id="sid-lbl" onclick="copySid()" title="Click to copy session ID"></span>
-    </div>
-  </div>
-
-  <div id="main">
-    <div id="board">
-      <div id="empty-state">
-        <p>Awaiting the GM's map…</p>
-        <button class="tb gm" style="pointer-events:all" onclick="openMapModal()">Set Map URL</button>
-      </div>
-      <div id="board-wrap">
-        <img id="map-img" src="" style="display:none">
-        <div id="fog-layer"></div>
-        <div id="token-layer"></div>
-        <div id="ping-layer"></div>
-      </div>
-    </div>
-
-    <div id="panel">
-      <div id="info-pane">
-        <div id="info-header">
-          <span id="info-name"></span>
-          <button id="info-close" onclick="closeInfo()">✕</button>
-        </div>
-        <div id="info-sheet" style="display:none"><img id="info-sheet-img" src=""></div>
-        <div id="info-enemy" style="display:none"><strong id="info-enemy-name"></strong><span id="info-enemy-lore"></span></div>
-      </div>
-
-      <div id="panel-scroll">
-        <div class="ps">
-          <h3>🎲 Dice</h3>
-          <div class="dgrid">
-            <button class="db" onclick="roll(4)">d4</button>
-            <button class="db" onclick="roll(6)">d6</button>
-            <button class="db" onclick="roll(8)">d8</button>
-            <button class="db" onclick="roll(10)">d10</button>
-            <button class="db" onclick="roll(12)">d12</button>
-            <button class="db" onclick="roll(20)">d20</button>
-            <button class="db" onclick="roll(100)">d%</button>
-            <button class="db" onclick="rollExpr()">?d?</button>
-          </div>
-          <div class="mr">
-            <label>Qty</label><input id="qty" type="number" value="1" min="1" max="20">
-            <label style="margin-left:0.28rem">Mod</label><input id="mod" type="number" value="0" min="-99" max="99">
-          </div>
-          <div id="rlog"></div>
-        </div>
-
-        <div class="ps gm-b">
-          <h3>🪙 Tokens</h3>
-          <div id="tok-list"></div>
-          <button class="action-btn" onclick="openTokModal()">+ Add Token</button>
-        </div>
-
-        <div class="ps">
-          <h3>📍 Ping</h3>
-          <p class="ping-note">Double-click the map to ping a location. Everyone sees it.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, remove, update, onDisconnect, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
-let db;
-let sid='', myId=Math.random().toString(36).slice(2,10), myName='', isGM=false;
-let scale=1, panX=0, panY=0;
-let panning=false, pSX=0, pSY=0, pOX=0, pOY=0;
-let tokens={}, selTok=null, dragId=null, dOX=0, dOY=0, mapW=0, mapH=0;
-let fogs={}, selFog=null, fogMode=false;
-let fogDrag=null, fogDragOX=0, fogDragOY=0;
-let fogResize=null, fogResizeSW=0, fogResizeSH=0, fogResizeMX=0, fogResizeMY=0;
-let fogDrawing=false, fogDrawId=null, fogDrawSX=0, fogDrawSY=0;
-const shownPings=new Set();
+/* =========================================================
+   BEGINNER PARTY SHEET v1
+   - Single HTML
+   - Firebase Realtime Database (not Firestore)
+   - LocalStorage fallback
+   - Beginner-friendly 5.5e style helper sheet
+   ========================================================= */
 
-let tokRef, rollRef, mapRef, presRef, pingRef, fogRef;
+const CAMPAIGN_ID = "beginnerPartyV1";
+const LS_KEY = "beginnerPartyV1State";
+const SAVE_DEBOUNCE_MS = 450;
 
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-// Hardcoded Firebase config — players never need to enter anything
-const HARDCODED_CFG={
-  apiKey:"AIzaSyBxhgU7Ef039EywGNuIWwjuxz1Vsn_ekrE",
-  authDomain:"disney-vtt.firebaseapp.com",
-  databaseURL:"https://disney-vtt-default-rtdb.firebaseio.com",
-  projectId:"disney-vtt"
-};
-const loadCfg=()=>{const saved=JSON.parse(localStorage.getItem('vtt5-cfg')||'null');return saved||HARDCODED_CFG;};
-window.openCfg=()=>{
-  const c=loadCfg();
-  document.getElementById('c-key').value=c.apiKey||'';
-  document.getElementById('c-auth').value=c.authDomain||'';
-  document.getElementById('c-db').value=c.databaseURL||'';
-  document.getElementById('c-pid').value=c.projectId||'';
-  document.getElementById('cfg-modal').classList.add('open');
-};
-window.closeCfg=()=>document.getElementById('cfg-modal').classList.remove('open');
-window.saveCfg=()=>{
-  const c={apiKey:document.getElementById('c-key').value.trim(),authDomain:document.getElementById('c-auth').value.trim(),databaseURL:document.getElementById('c-db').value.trim(),projectId:document.getElementById('c-pid').value.trim()};
-  if(!c.databaseURL){toast('Database URL required');return;}
-  localStorage.setItem('vtt5-cfg',JSON.stringify(c));closeCfg();toast('Config saved');
-};
-
-// ── ENTER ─────────────────────────────────────────────────────────────────────
-window.enter=async()=>{
-  myName=document.getElementById('inp-name').value.trim();
-  const role=document.getElementById('inp-role').value;
-  sid=document.getElementById('inp-sid').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-')||'default';
-  if(!myName){toast('Enter your name');return;}
-  const cfg=loadCfg();
-  if(!cfg?.databaseURL){toast('Firebase config missing');return;}
-  isGM=role==='gm';
-  try{const app=initializeApp(cfg,'v'+myId);db=getDatabase(app);}
-  catch(e){toast('Firebase: '+e.message);return;}
-  if(isGM)document.body.classList.add('is-gm');
-
-  tokRef  =ref(db,`s/${sid}/tokens`);
-  rollRef =ref(db,`s/${sid}/rolls`);
-  mapRef  =ref(db,`s/${sid}/map`);
-  presRef =ref(db,`s/${sid}/pres/${myId}`);
-  pingRef =ref(db,`s/${sid}/pings`);
-  fogRef  =ref(db,`s/${sid}/fogs`);
-
-  await set(presRef,{name:myName,ts:serverTimestamp()});
-  onDisconnect(presRef).remove();
-
-  onValue(ref(db,`s/${sid}/pres`),snap=>{
-    const p=snap.val()||{};
-    document.getElementById('pip-wrap').innerHTML=Object.values(p).map(x=>`<span class="pip" title="${x.name}"></span>`).join('');
-  });
-  onValue(mapRef,snap=>{const d=snap.val();d?applyMap(d):clearMapLocal();});
-  onValue(tokRef,snap=>{tokens=snap.val()||{};renderTokens();renderTokList();});
-  onValue(rollRef,snap=>{renderRolls(Object.values(snap.val()||{}).sort((a,b)=>a.ts-b.ts));});
-  onValue(pingRef,snap=>{const p=snap.val()||{};Object.entries(p).forEach(([id,v])=>showPing(v.x,v.y,v.name,id));});
-  onValue(fogRef,snap=>{fogs=snap.val()||{};renderFogs();});
-
-  document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('sid-lbl').textContent=sid;
-  document.getElementById('sdot').classList.add('ok');
-  initBoard();
-  toast(`Welcome, ${myName}`);
-};
-
-// ── MAP ───────────────────────────────────────────────────────────────────────
-window.openMapModal=()=>{
-  const current=document.getElementById('map-img').src;
-  document.getElementById('map-url-input').value=current&&current!==window.location.href?current:'';
-  document.getElementById('map-modal').classList.add('open');
-};
-window.closeMapModal=()=>document.getElementById('map-modal').classList.remove('open');
-
-window.setMap=async()=>{
-  const url=document.getElementById('map-url-input').value.trim();
-  if(!url){toast('Paste a map URL first');return;}
-  await set(mapRef,{url,ts:Date.now()});
-  closeMapModal();toast('Map loaded!');
-};
-
-function applyMap(d){
-  const img=document.getElementById('map-img');
-  img.src=d.url;img.style.display='block';
-  document.getElementById('empty-state').classList.add('gone');
-  img.onload=()=>{
-    mapW=img.naturalWidth;mapH=img.naturalHeight;
-    ['board-wrap','token-layer','fog-layer','ping-layer'].forEach(id=>{
-      document.getElementById(id).style.width=mapW+'px';
-      document.getElementById(id).style.height=mapH+'px';
-    });
-    fitToScreen();renderFogs();
-  };
-  img.onerror=()=>toast('Could not load map — check the URL');
-}
-
-function clearMapLocal(){
-  const img=document.getElementById('map-img');img.src='';img.style.display='none';
-  document.getElementById('empty-state').classList.remove('gone');
-}
-
-window.clearMap=async()=>{
-  if(!isGM)return;
-  await remove(mapRef);
-  toast('Map cleared');
-};
-
-function fitToScreen(){
-  const b=document.getElementById('board');
-  const s=Math.min(b.clientWidth/mapW,b.clientHeight/mapH,1)*0.92;
-  scale=s;panX=(b.clientWidth-mapW*s)/2;panY=(b.clientHeight-mapH*s)/2;
-  applyTransform();
-}
-
-// ── TOKENS ────────────────────────────────────────────────────────────────────
-window.updateTokTypeUI=(type)=>{
-  document.getElementById('tok-sheet-wrap').style.display=type==='pc'?'block':'none';
-  document.getElementById('tok-lore-wrap').style.display=type==='enemy'?'block':'none';
-};
-
-window.openTokModal=()=>{
-  document.getElementById('tok-modal-title').textContent='Add Token';
-  document.getElementById('tok-save-btn').textContent='Add Token';
-  document.getElementById('tok-name').value='';
-  document.getElementById('tok-type').value='pc';
-  document.getElementById('tok-img-url').value='';
-  document.getElementById('tok-sheet-url').value='';
-  document.getElementById('tok-lore').value='';
-  updateTokTypeUI('pc');
-  document.getElementById('tok-modal').classList.add('open');
-};
-window.closeTokModal=()=>document.getElementById('tok-modal').classList.remove('open');
-
-window.saveToken=async()=>{
-  if(!isGM)return;
-  const name=document.getElementById('tok-name').value.trim();
-  const type=document.getElementById('tok-type').value;
-  const imgUrl=document.getElementById('tok-img-url').value.trim();
-  const sheetUrl=document.getElementById('tok-sheet-url').value.trim();
-  const lore=document.getElementById('tok-lore').value.trim();
-  if(!name){toast('Enter a name');return;}
-  if(!imgUrl){toast('Paste a token image URL');return;}
-  const b=document.getElementById('board');
-  const cx=(b.clientWidth/2-panX)/scale, cy=(b.clientHeight/2-panY)/scale;
-  const id=push(tokRef).key;
-  await set(ref(db,`s/${sid}/tokens/${id}`),{name,type,url:imgUrl,sheetUrl,lore,x:cx,y:cy,size:70});
-  closeTokModal();toast(`${name} added`);
-};
-
-function renderTokens(){
-  const layer=document.getElementById('token-layer');
-  [...layer.querySelectorAll('.token')].forEach(el=>{if(!tokens[el.dataset.id])el.remove();});
-  Object.entries(tokens).forEach(([id,t])=>{
-    let el=document.getElementById('tok-'+id);
-    if(!el){
-      el=document.createElement('div');
-      el.className=`token type-${t.type}`;
-      el.id='tok-'+id;el.dataset.id=id;
-      el.innerHTML=`<img draggable="false"><div class="token-name"></div>`;
-      el.addEventListener('click',ev=>{if(dragId)return;showInfo(id);ev.stopPropagation();});
-      if(isGM){
-        el.addEventListener('mousedown',ev=>{
-          if(ev.button!==0)return;ev.stopPropagation();
-          selTok=id;renderTokens();renderTokList();
-          const pos=boardPos(ev.clientX,ev.clientY);
-          dOX=pos.x-tokens[id].x;dOY=pos.y-tokens[id].y;
-          dragId=id;el.classList.add('dragging');
-        });
+const CHARS = {
+  jasmine: {
+    id: "jasmine",
+    name: "Jasmine",
+    color: "var(--jasmine)",
+    colorBg: "rgba(141,216,166,.05)",
+    classLine: "Human Ranger 3 · Gloom Stalker",
+    level: 3,
+    maxHp: 28,
+    ac: 15,
+    speed: "30 ft",
+    initiative: "+3",
+    prof: 2,
+    spellDc: 13,
+    spellAtk: "+5",
+    darkvision: "60 ft",
+    spellcastingMode: "prepared",
+    preparedLimit: 3,
+    abilities: { str: 10, dex: 16, con: 14, int: 10, wis: 14, cha: 8 },
+    saves: [
+      { name: "STR", val: "+2", prof: true },
+      { name: "DEX", val: "+5", prof: true },
+      { name: "CON", val: "+2", prof: false },
+      { name: "INT", val: "+0", prof: false },
+      { name: "WIS", val: "+2", prof: false },
+      { name: "CHA", val: "-1", prof: false }
+    ],
+    skills: [
+      { name: "Perception", val: "+6", prof: true },
+      { name: "Stealth", val: "+5", prof: true },
+      { name: "Survival", val: "+4", prof: true },
+      { name: "Nature", val: "+2", prof: true },
+      { name: "Athletics", val: "+2", prof: true }
+    ],
+    combatStats: [
+      ["AC", "15"],
+      ["Init", "+3"],
+      ["Speed", "30 ft"],
+      ["Spell DC", "13"],
+      ["Spell Atk", "+5"],
+      ["Passive Perception", "16"]
+    ],
+    attacks: [
+      {
+        id: "longbow",
+        name: "Longbow",
+        action: "Action",
+        toHit: "Roll 1d20 + 5",
+        damage: "On hit: 1d8 + 3 piercing",
+        range: "150/600 ft",
+        defense: "Stay far away, use cover, and fight from darkness or dim light when possible.",
+        notes: "Best default attack. If Hunter's Mark is up, add +1d6 damage."
+      },
+      {
+        id: "shortsword",
+        name: "Shortsword",
+        action: "Action",
+        toHit: "Roll 1d20 + 5",
+        damage: "On hit: 1d6 + 3 piercing",
+        range: "Melee",
+        defense: "Avoid standing toe-to-toe unless you must. If enemies close in, back up when safe.",
+        notes: "Backup melee option."
+      },
+      {
+        id: "dagger",
+        name: "Dagger (thrown or melee)",
+        action: "Action",
+        toHit: "Roll 1d20 + 5",
+        damage: "On hit: 1d4 + 3 piercing",
+        range: "20/60 ft or melee",
+        defense: "Useful when you need a light backup weapon or can't use the bow.",
+        notes: "Simple emergency option."
       }
-      layer.appendChild(el);
+    ],
+    spells: {
+      slots: { 1: [true, true] },
+      cantrips: [],
+      alwaysPrepared: [
+        {
+          id: "gloom_disguise_self",
+          level: "Subclass",
+          badge: "Gloom",
+          name: "Disguise Self",
+          tags: ["Action"],
+          meta: { range: "Self", duration: "1 hour", use: "Stealth / social" },
+          desc: "Change how you look for scouting, sneaking, or social tricks.",
+          beginner: "Great outside combat. Not your main combat spell."
+        }
+      ],
+      preparedOptions: [
+        {
+          id: "hunters_mark",
+          level: "1st",
+          badge: "1st",
+          name: "Hunter's Mark",
+          tags: ["Bonus Action", "Concentration"],
+          meta: { range: "90 ft", duration: "Up to 1 hour", use: "Damage boost" },
+          desc: "Mark one target. Every time you hit it with a weapon, add <strong>+1d6 damage</strong>. If the target drops, you can move the mark later with a Bonus Action.",
+          beginner: "Cast this early on a tough enemy, then keep shooting with your longbow."
+        },
+        {
+          id: "fog_cloud",
+          level: "1st",
+          badge: "1st",
+          name: "Fog Cloud",
+          tags: ["Action", "Concentration"],
+          meta: { range: "120 ft", duration: "Up to 1 hour", use: "Defense / escape" },
+          desc: "Create a big area of heavy fog. People inside can't see well. Great for blocking enemy archers, escaping, or making a retreat.",
+          beginner: "Use this when the party is getting shot at or needs to break line of sight."
+        },
+        {
+          id: "ensnaring_strike",
+          level: "1st",
+          badge: "1st",
+          name: "Ensnaring Strike",
+          tags: ["Bonus Action", "Concentration"],
+          meta: { range: "Self", duration: "Next hit / up to 1 min", use: "Control" },
+          desc: "Cast before a weapon attack. The next time you hit, the target may get stuck and take extra ongoing damage if it fails the save.",
+          beginner: "Use on one dangerous melee enemy to slow it down."
+        },
+        {
+          id: "cure_wounds",
+          level: "1st",
+          badge: "1st",
+          name: "Cure Wounds",
+          tags: ["Action"],
+          meta: { range: "Touch", duration: "Instant", use: "Healing" },
+          desc: "Touch an ally and heal <strong>2d8 + 2 HP</strong>.",
+          beginner: "Only use this if you can safely reach someone."
+        },
+        {
+          id: "goodberry",
+          level: "1st",
+          badge: "1st",
+          name: "Goodberry",
+          tags: ["Action"],
+          meta: { range: "Touch", duration: "24 hours", use: "Healing / utility" },
+          desc: "Create magical berries. Each one gives a tiny bit of healing and can keep someone from starving.",
+          beginner: "Great out of combat or to prep before danger."
+        },
+        {
+          id: "longstrider",
+          level: "1st",
+          badge: "1st",
+          name: "Longstrider",
+          tags: ["Action"],
+          meta: { range: "Touch", duration: "1 hour", use: "Mobility" },
+          desc: "Give a creature extra speed.",
+          beginner: "Great on yourself if you need to kite enemies or scout."
+        }
+      ]
+    },
+    resources: [
+      {
+        key: "concentration",
+        label: "Concentration",
+        type: "toggle",
+        note: "If you take damage while concentrating, roll a CON save to keep the spell going (usually DC 10)."
+      }
+    ],
+    quickTips: [
+      "Default turn: Bonus Action <strong>Hunter's Mark</strong> (if not already up), then <strong>Longbow</strong>.",
+      "You are strongest at range. Use cover, darkness, and distance."
+    ]
+  },
+
+  wendy: {
+    id: "wendy",
+    name: "Wendy",
+    color: "var(--wendy)",
+    colorBg: "rgba(245,161,90,.05)",
+    classLine: "Human Cleric 3 · War Domain",
+    level: 3,
+    maxHp: 27,
+    ac: 18,
+    speed: "30 ft",
+    initiative: "+0",
+    prof: 2,
+    spellDc: 13,
+    spellAtk: "+5",
+    spellcastingMode: "prepared",
+    preparedLimit: 6,
+    abilities: { str: 14, dex: 10, con: 14, int: 8, wis: 16, cha: 12 },
+    saves: [
+      { name: "STR", val: "+2", prof: false },
+      { name: "DEX", val: "+0", prof: false },
+      { name: "CON", val: "+2", prof: false },
+      { name: "INT", val: "-1", prof: false },
+      { name: "WIS", val: "+5", prof: true },
+      { name: "CHA", val: "+3", prof: true }
+    ],
+    skills: [
+      { name: "Insight", val: "+5", prof: true },
+      { name: "Medicine", val: "+5", prof: true },
+      { name: "Religion", val: "+1", prof: true },
+      { name: "Persuasion", val: "+3", prof: true }
+    ],
+    combatStats: [
+      ["AC", "18"],
+      ["Init", "+0"],
+      ["Speed", "30 ft"],
+      ["Spell DC", "13"],
+      ["Spell Atk", "+5"],
+      ["Passive Perception", "13"]
+    ],
+    attacks: [
+      {
+        id: "warhammer",
+        name: "Warhammer",
+        action: "Action",
+        toHit: "Roll 1d20 + 4",
+        damage: "On hit: 1d8 + 2 bludgeoning",
+        range: "Melee",
+        defense: "High AC means you can stand near the front, but don't overextend away from the group.",
+        notes: "Reliable melee. If using two hands, damage becomes 1d10 + 2."
+      },
+      {
+        id: "sacred_flame",
+        name: "Sacred Flame (Cantrip)",
+        action: "Action",
+        toHit: "No attack roll — enemy rolls DEX save vs DC 13",
+        damage: "On fail: 1d8 radiant",
+        range: "60 ft",
+        defense: "Use when enemies are hard to hit with AC or are far away.",
+        notes: "Great cantrip when you don't want to spend a slot."
+      },
+      {
+        id: "guiding_bolt",
+        name: "Guiding Bolt (1st-level)",
+        action: "Action (spell slot)",
+        toHit: "Roll 1d20 + 5",
+        damage: "On hit: 4d6 radiant",
+        range: "120 ft",
+        defense: "Stay behind the frontline if casting from range.",
+        notes: "Next attack against that target is easier for an ally."
+      }
+    ],
+    spells: {
+      slots: { 1: [true, true, true, true], 2: [true, true] },
+      cantrips: [
+        {
+          id: "sacred_flame",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Sacred Flame",
+          tags: ["Action", "No Slot"],
+          meta: { range: "60 ft", duration: "Instant", use: "Ranged cantrip" },
+          desc: "Enemy makes a DEX save. On a fail, it takes <strong>1d8 radiant</strong>.",
+          beginner: "Use this when you want to save spell slots."
+        },
+        {
+          id: "thaumaturgy",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Thaumaturgy",
+          tags: ["Action", "No Slot"],
+          meta: { range: "30 ft", duration: "Short effect", use: "Flavor / utility" },
+          desc: "Small dramatic divine effects: voice, tremors, lights, doors, and similar flair.",
+          beginner: "Mostly utility and roleplay."
+        },
+        {
+          id: "spare_the_dying",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Spare the Dying",
+          tags: ["Action", "No Slot"],
+          meta: { range: "Touch", duration: "Instant", use: "Stabilize" },
+          desc: "Stabilize a dying ally at 0 HP so they stop making death saves.",
+          beginner: "Great if you cannot spend a slot or need to stop the bleeding now."
+        }
+      ],
+      alwaysPrepared: [
+        {
+          id: "divine_favor",
+          level: "Domain",
+          badge: "War",
+          name: "Divine Favor",
+          tags: ["Bonus Action", "Concentration"],
+          meta: { range: "Self", duration: "Up to 1 min", use: "Melee damage" },
+          desc: "Your weapon hits deal a little extra radiant damage while the spell lasts.",
+          beginner: "Use if you want to fight in melee instead of supporting."
+        },
+        {
+          id: "shield_of_faith",
+          level: "Domain",
+          badge: "War",
+          name: "Shield of Faith",
+          tags: ["Bonus Action", "Concentration"],
+          meta: { range: "60 ft", duration: "Up to 10 min", use: "Defense" },
+          desc: "Give one creature <strong>+2 AC</strong>.",
+          beginner: "Great on Kristoff or on yourself if you need to hold a doorway."
+        },
+        {
+          id: "magic_weapon",
+          level: "Domain",
+          badge: "War",
+          name: "Magic Weapon",
+          tags: ["Bonus Action", "Concentration"],
+          meta: { range: "Touch", duration: "Up to 1 hour", use: "Weapon buff" },
+          desc: "A weapon becomes magical and gets a small bonus to hit and damage.",
+          beginner: "Excellent if someone is swinging a weapon all fight."
+        },
+        {
+          id: "spiritual_weapon",
+          level: "Domain",
+          badge: "War",
+          name: "Spiritual Weapon",
+          tags: ["Bonus Action"],
+          meta: { range: "60 ft", duration: "1 min", use: "Bonus damage" },
+          desc: "Create a floating weapon that attacks using your Bonus Action. It deals <strong>1d8 + 3 force</strong> on a hit.",
+          beginner: "One of your best combat spells. It does not need concentration."
+        }
+      ],
+      preparedOptions: [
+        {
+          id: "bless",
+          level: "1st",
+          badge: "1st",
+          name: "Bless",
+          tags: ["Action", "Concentration"],
+          meta: { range: "30 ft", duration: "Up to 1 min", use: "Party buff" },
+          desc: "Choose up to 3 allies. Whenever they attack or make a saving throw, they add <strong>1d4</strong>.",
+          beginner: "One of your best spells. Cast this early if the fight looks serious."
+        },
+        {
+          id: "healing_word",
+          level: "1st",
+          badge: "1st",
+          name: "Healing Word",
+          tags: ["Bonus Action"],
+          meta: { range: "60 ft", duration: "Instant", use: "Emergency heal" },
+          desc: "Heal an ally at range for <strong>1d4 + 3 HP</strong>.",
+          beginner: "Best emergency pick-up spell because it only uses your Bonus Action."
+        },
+        {
+          id: "cure_wounds",
+          level: "1st",
+          badge: "1st",
+          name: "Cure Wounds",
+          tags: ["Action"],
+          meta: { range: "Touch", duration: "Instant", use: "Bigger heal" },
+          desc: "Touch an ally and heal <strong>2d8 + 3 HP</strong>.",
+          beginner: "Better healing than Healing Word, but you must be next to them and it costs your Action."
+        },
+        {
+          id: "guiding_bolt",
+          level: "1st",
+          badge: "1st",
+          name: "Guiding Bolt",
+          tags: ["Action"],
+          meta: { range: "120 ft", duration: "Instant", use: "Big hit" },
+          desc: "Make a spell attack. On a hit, deal <strong>4d6 radiant</strong> and the next hit against that target is easier.",
+          beginner: "Great opening nuke."
+        },
+        {
+          id: "aid",
+          level: "2nd",
+          badge: "2nd",
+          name: "Aid",
+          tags: ["Action"],
+          meta: { range: "30 ft", duration: "8 hours", use: "Party durability" },
+          desc: "Boost up to 3 allies' maximum and current HP for a long stretch.",
+          beginner: "Amazing before or at the start of a hard fight."
+        },
+        {
+          id: "lesser_restoration",
+          level: "2nd",
+          badge: "2nd",
+          name: "Lesser Restoration",
+          tags: ["Action"],
+          meta: { range: "Touch", duration: "Instant", use: "Condition removal" },
+          desc: "Remove a common harmful condition or effect from an ally.",
+          beginner: "Good utility when someone is badly hindered."
+        },
+        {
+          id: "hold_person",
+          level: "2nd",
+          badge: "2nd",
+          name: "Hold Person",
+          tags: ["Action", "Concentration"],
+          meta: { range: "60 ft", duration: "Up to 1 min", use: "Control" },
+          desc: "Try to lock down a humanoid enemy so the party can focus them.",
+          beginner: "Very strong when it works, but only against humanoids."
+        }
+      ]
+    },
+    resources: [
+      {
+        key: "warPriest",
+        label: "War Priest (Bonus Action Attack)",
+        type: "pips",
+        count: 3,
+        note: "After you take the Attack action, you can make one extra weapon attack as a Bonus Action."
+      },
+      {
+        key: "channelDivinity",
+        label: "Channel Divinity",
+        type: "pips",
+        count: 1,
+        note: "Use when you really need a key attack to land or for big clutch moments."
+      },
+      {
+        key: "concentration",
+        label: "Concentration",
+        type: "toggle",
+        note: "Only one concentration spell at a time."
+      }
+    ],
+    quickTips: [
+      "Default strong opener: <strong>Bless</strong> if the fight is hard, or <strong>Spiritual Weapon</strong> if you want fast damage.",
+      "You have high AC. You can protect weaker allies by standing between them and enemies."
+    ]
+  },
+
+  esmeralda: {
+    id: "esmeralda",
+    name: "Esmeralda",
+    color: "var(--esmeralda)",
+    colorBg: "rgba(211,141,255,.05)",
+    classLine: "Human Bard 3 · Dance Bard",
+    level: 3,
+    maxHp: 24,
+    ac: 14,
+    speed: "30 ft",
+    initiative: "+2",
+    prof: 2,
+    spellDc: 13,
+    spellAtk: "+5",
+    spellcastingMode: "prepared",
+    preparedLimit: 6,
+    abilities: { str: 8, dex: 14, con: 12, int: 10, wis: 10, cha: 16 },
+    saves: [
+      { name: "STR", val: "-1", prof: false },
+      { name: "DEX", val: "+4", prof: true },
+      { name: "CON", val: "+1", prof: false },
+      { name: "INT", val: "+0", prof: false },
+      { name: "WIS", val: "+0", prof: false },
+      { name: "CHA", val: "+5", prof: true }
+    ],
+    skills: [
+      { name: "Performance", val: "+7", prof: true },
+      { name: "Persuasion", val: "+7", prof: true },
+      { name: "Acrobatics", val: "+4", prof: true },
+      { name: "Insight", val: "+2", prof: true },
+      { name: "Stealth", val: "+4", prof: true }
+    ],
+    combatStats: [
+      ["AC", "14"],
+      ["Init", "+2"],
+      ["Speed", "30 ft"],
+      ["Spell DC", "13"],
+      ["Spell Atk", "+5"],
+      ["Passive Perception", "10"]
+    ],
+    attacks: [
+      {
+        id: "rapier",
+        name: "Rapier",
+        action: "Action",
+        toHit: "Roll 1d20 + 4",
+        damage: "On hit: 1d8 + 2 piercing",
+        range: "Melee",
+        defense: "You are not a tank. Step in only if the target is already tied up or nearly down.",
+        notes: "Decent backup when something reaches you."
+      },
+      {
+        id: "vicious_mockery",
+        name: "Vicious Mockery (Cantrip)",
+        action: "Action",
+        toHit: "No attack roll — enemy rolls WIS save vs DC 13",
+        damage: "On fail: 1d4 psychic",
+        range: "60 ft",
+        defense: "This is weak damage but good defense.",
+        notes: "If it fails, its next attack is worse. Great beginner cantrip."
+      },
+      {
+        id: "dissonant_whispers",
+        name: "Dissonant Whispers (1st-level)",
+        action: "Action (spell slot)",
+        toHit: "No attack roll — enemy rolls WIS save vs DC 13",
+        damage: "On fail: 3d6 psychic",
+        range: "60 ft",
+        defense: "Cast from safety behind the frontline.",
+        notes: "If it runs away, allies may get opportunity attacks."
+      }
+    ],
+    spells: {
+      slots: { 1: [true, true, true, true], 2: [true, true] },
+      cantrips: [
+        {
+          id: "vicious_mockery",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Vicious Mockery",
+          tags: ["Action", "No Slot"],
+          meta: { range: "60 ft", duration: "Instant", use: "Defense / chip damage" },
+          desc: "Enemy makes a WIS save. On a fail, it takes <strong>1d4 psychic</strong> and its next attack is worse.",
+          beginner: "Use this when protecting the party matters more than damage."
+        },
+        {
+          id: "mage_hand",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Mage Hand",
+          tags: ["Action", "No Slot"],
+          meta: { range: "30 ft", duration: "1 min", use: "Utility" },
+          desc: "Create a floating spectral hand for small interactions at short range.",
+          beginner: "Great utility and problem-solving."
+        }
+      ],
+      alwaysPrepared: [],
+      preparedOptions: [
+        {
+          id: "healing_word",
+          level: "1st",
+          badge: "1st",
+          name: "Healing Word",
+          tags: ["Bonus Action"],
+          meta: { range: "60 ft", duration: "Instant", use: "Emergency heal" },
+          desc: "Heal an ally at range for <strong>1d4 + 3 HP</strong>.",
+          beginner: "Fantastic emergency spell because you can still use your Action after."
+        },
+        {
+          id: "dissonant_whispers",
+          level: "1st",
+          badge: "1st",
+          name: "Dissonant Whispers",
+          tags: ["Action"],
+          meta: { range: "60 ft", duration: "Instant", use: "Damage / reposition" },
+          desc: "Enemy makes a WIS save. On a fail, it takes <strong>3d6 psychic</strong> and tries to run away using its Reaction.",
+          beginner: "Very strong if Kristoff or Wendy are standing next to the target."
+        },
+        {
+          id: "faerie_fire",
+          level: "1st",
+          badge: "1st",
+          name: "Faerie Fire",
+          tags: ["Action", "Concentration"],
+          meta: { range: "60 ft", duration: "Up to 1 min", use: "Team accuracy" },
+          desc: "Outline enemies in light. Targets that fail the save are easier to hit.",
+          beginner: "Amazing party support. Great against several enemies at once."
+        },
+        {
+          id: "tashas_hideous_laughter",
+          level: "1st",
+          badge: "1st",
+          name: "Tasha's Hideous Laughter",
+          tags: ["Action", "Concentration"],
+          meta: { range: "30 ft", duration: "Up to 1 min", use: "Single target control" },
+          desc: "Try to knock one creature out of the fight with laughter. It may lose actions until it recovers.",
+          beginner: "Use on the scariest single enemy."
+        },
+        {
+          id: "heroism",
+          level: "1st",
+          badge: "1st",
+          name: "Heroism",
+          tags: ["Action", "Concentration"],
+          meta: { range: "Touch", duration: "Up to 1 min", use: "Buff" },
+          desc: "A brave ally becomes harder to scare and gets a small stream of temporary HP.",
+          beginner: "Good on Kristoff before he wades in."
+        },
+        {
+          id: "suggestion",
+          level: "2nd",
+          badge: "2nd",
+          name: "Suggestion",
+          tags: ["Action", "Concentration"],
+          meta: { range: "30 ft", duration: "Up to 8 hours", use: "Control / social" },
+          desc: "Give a reasonable command and try to make a target follow it.",
+          beginner: "Very powerful, but best when the DM agrees the wording makes sense."
+        },
+        {
+          id: "invisibility",
+          level: "2nd",
+          badge: "2nd",
+          name: "Invisibility",
+          tags: ["Action", "Concentration"],
+          meta: { range: "Touch", duration: "Up to 1 hour", use: "Stealth / rescue" },
+          desc: "Make a creature unseen until the effect ends or they attack/cast a spell.",
+          beginner: "Great for sneaking, escaping, or getting someone out of danger."
+        }
+      ]
+    },
+    resources: [
+      {
+        key: "bardicInspiration",
+        label: "Bardic Inspiration (d6)",
+        type: "pips",
+        count: 3,
+        note: "Bonus Action. Give an ally a d6 they can add to a check, attack, or save."
+      },
+      {
+        key: "concentration",
+        label: "Concentration",
+        type: "toggle",
+        note: "Only one concentration spell at a time."
+      }
+    ],
+    quickTips: [
+      "Default turn: <strong>Faerie Fire</strong> on groups, or <strong>Dissonant Whispers</strong> on one scary enemy.",
+      "Stay behind Kristoff and Wendy. You are a support/control caster first."
+    ]
+  },
+
+  kristoff: {
+    id: "kristoff",
+    name: "Kristoff",
+    color: "var(--kristoff)",
+    colorBg: "rgba(127,176,255,.05)",
+    classLine: "Human Fighter 3 · Eldritch Knight",
+    level: 3,
+    maxHp: 31,
+    ac: 18,
+    speed: "30 ft",
+    initiative: "+1",
+    prof: 2,
+    spellDc: 11,
+    spellAtk: "+3",
+    spellcastingMode: "prepared",
+    preparedLimit: 3,
+    abilities: { str: 16, dex: 12, con: 14, int: 12, wis: 10, cha: 8 },
+    saves: [
+      { name: "STR", val: "+5", prof: true },
+      { name: "DEX", val: "+1", prof: false },
+      { name: "CON", val: "+4", prof: true },
+      { name: "INT", val: "+1", prof: false },
+      { name: "WIS", val: "+0", prof: false },
+      { name: "CHA", val: "-1", prof: false }
+    ],
+    skills: [
+      { name: "Athletics", val: "+5", prof: true },
+      { name: "Perception", val: "+2", prof: true },
+      { name: "Intimidation", val: "+1", prof: true },
+      { name: "History", val: "+3", prof: true }
+    ],
+    combatStats: [
+      ["AC", "18"],
+      ["Init", "+1"],
+      ["Speed", "30 ft"],
+      ["Spell DC", "11"],
+      ["Spell Atk", "+3"],
+      ["Passive Perception", "12"]
+    ],
+    attacks: [
+      {
+        id: "longsword",
+        name: "Longsword + Shield",
+        action: "Action",
+        toHit: "Roll 1d20 + 5",
+        damage: "On hit: 1d8 + 3 slashing",
+        range: "Melee",
+        defense: "You are the best person to stand in front. Keep enemies off Jasmine and Esmeralda.",
+        notes: "Default attack almost every turn."
+      },
+      {
+        id: "javelin",
+        name: "Javelin",
+        action: "Action",
+        toHit: "Roll 1d20 + 5",
+        damage: "On hit: 1d6 + 3 piercing",
+        range: "30/120 ft",
+        defense: "Use this if you can't reach the target yet.",
+        notes: "Solid ranged backup."
+      },
+      {
+        id: "fire_bolt",
+        name: "Fire Bolt (Cantrip)",
+        action: "Action",
+        toHit: "Roll 1d20 + 3",
+        damage: "On hit: 1d10 fire",
+        range: "120 ft",
+        defense: "Use only if you're stuck at range and don't want to spend a slot.",
+        notes: "Backup ranged cantrip."
+      }
+    ],
+    spells: {
+      slots: { 1: [true, true] },
+      cantrips: [
+        {
+          id: "fire_bolt",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Fire Bolt",
+          tags: ["Action", "No Slot"],
+          meta: { range: "120 ft", duration: "Instant", use: "Ranged cantrip" },
+          desc: "Make a spell attack. On a hit, deal <strong>1d10 fire</strong>.",
+          beginner: "Simple ranged fallback."
+        },
+        {
+          id: "blade_ward",
+          level: "Cantrip",
+          badge: "Cantrip",
+          name: "Blade Ward",
+          tags: ["Action", "No Slot"],
+          meta: { range: "Self", duration: "Short", use: "Defense" },
+          desc: "Briefly reduce incoming weapon-type punishment.",
+          beginner: "Only use if you expect to get hammered and cannot attack effectively."
+        }
+      ],
+      alwaysPrepared: [],
+      preparedOptions: [
+        {
+          id: "shield",
+          level: "1st",
+          badge: "1st",
+          name: "Shield",
+          tags: ["Reaction"],
+          meta: { range: "Self", duration: "Until your next turn", use: "Defense" },
+          desc: "When something would hit you, you can suddenly boost your defense and possibly turn the hit into a miss.",
+          beginner: "This is your panic button. Use when a hit looks dangerous."
+        },
+        {
+          id: "magic_missile",
+          level: "1st",
+          badge: "1st",
+          name: "Magic Missile",
+          tags: ["Action"],
+          meta: { range: "120 ft", duration: "Instant", use: "Guaranteed damage" },
+          desc: "Automatically hits with 3 darts. Each dart deals <strong>1d4 + 1 force</strong>.",
+          beginner: "Use when you absolutely need damage and don't want to risk missing."
+        },
+        {
+          id: "thunderwave",
+          level: "1st",
+          badge: "1st",
+          name: "Thunderwave",
+          tags: ["Action"],
+          meta: { range: "Self area", duration: "Instant", use: "Close-range burst" },
+          desc: "Creatures near you make a save. On a fail, they take <strong>2d8 thunder</strong> and may get pushed away.",
+          beginner: "Good if several enemies surround you."
+        }
+      ]
+    },
+    resources: [
+      {
+        key: "secondWind",
+        label: "Second Wind",
+        type: "pips",
+        count: 1,
+        note: "Bonus Action. Heal yourself for 1d10 + 3."
+      },
+      {
+        key: "actionSurge",
+        label: "Action Surge",
+        type: "pips",
+        count: 1,
+        note: "Take one extra Action on your turn. Great for attack + spell, or two big attacks over two turns of pressure."
+      },
+      {
+        key: "concentration",
+        label: "Concentration",
+        type: "toggle",
+        note: "Mostly relevant only if you add concentration spells later."
+      }
+    ],
+    quickTips: [
+      "Default turn: move into melee and <strong>Longsword</strong>.",
+      "If you get hit hard, use <strong>Second Wind</strong>. If a big hit is incoming, use <strong>Shield</strong>."
+    ]
+  }
+};
+
+const CONDITIONS = [
+  {
+    name: "Blinded",
+    color: "var(--gold)",
+    save: "Varies",
+    mechanic: "You can't see. Your attacks are worse, and attacks against you are easier.",
+    player: "If possible, move to safety or ask for help. Don't waste big attack rolls unless you must.",
+    end: "Usually ends when the effect ends or you pass the save."
+  },
+  {
+    name: "Charmed",
+    color: "var(--esmeralda)",
+    save: "WIS",
+    mechanic: "You can't attack the creature that charmed you, and social effects may be stronger.",
+    player: "Avoid wasting turns. Help allies in ways that don't directly target the charmer if allowed.",
+    end: "Usually ends on a save, when the spell ends, or if the source breaks."
+  },
+  {
+    name: "Frightened",
+    color: "var(--red)",
+    save: "WIS",
+    mechanic: "You are scared. Your attacks/checks are worse while you can see the source, and you may not be able to move closer.",
+    player: "Break line of sight if you can. Back up, take cover, or target something else.",
+    end: "Usually pass the save or move where you can't see the source."
+  },
+  {
+    name: "Grappled",
+    color: "var(--gold)",
+    save: "Check to escape",
+    mechanic: "Your speed becomes 0. You can still attack and cast, but you can't move.",
+    player: "If movement matters, use your Action to escape. Otherwise, you can still fight from where you are.",
+    end: "Use Action to escape, or if the grappler is moved / disabled."
+  },
+  {
+    name: "Incapacitated",
+    color: "var(--red)",
+    save: "Varies",
+    mechanic: "No Actions and no Reactions.",
+    player: "You mostly lose your turn. Allies should protect you.",
+    end: "Usually ends when the source ends or you pass the save."
+  },
+  {
+    name: "Invisible",
+    color: "var(--green)",
+    save: "—",
+    mechanic: "Hard to target. Attacks against you are worse, and your attacks are easier.",
+    player: "Move carefully. If you want to stay hidden, don't make obvious noise or reveal your position.",
+    end: "Usually ends when you attack, cast a spell, or the duration ends."
+  },
+  {
+    name: "Paralyzed",
+    color: "var(--red)",
+    save: "Often CON",
+    mechanic: "You can't move or act. Nearby hits can become devastating.",
+    player: "This is extremely dangerous. Allies should protect you immediately.",
+    end: "Usually ends on a repeat save or a helpful effect."
+  },
+  {
+    name: "Poisoned",
+    color: "var(--green)",
+    save: "Often CON",
+    mechanic: "Your attacks and ability checks are worse.",
+    player: "You're still functional, but expect misses and bad skill rolls. Focus on safe plays.",
+    end: "Usually ends when the poison is cured or time runs out."
+  },
+  {
+    name: "Prone",
+    color: "var(--gold)",
+    save: "—",
+    mechanic: "You're on the ground. Melee enemies hit you easier, but ranged attacks can be worse against you.",
+    player: "Stand up by spending half your movement if melee enemies are near. Stay down only if ranged fire is the bigger threat.",
+    end: "Spend half your movement to stand."
+  },
+  {
+    name: "Restrained",
+    color: "var(--gold)",
+    save: "Varies",
+    mechanic: "You can't move. Your attacks are worse, enemies hit you easier, and DEX saves are harder.",
+    player: "Try to break free or ask for help. This is very bad if enemy archers or spellcasters are nearby.",
+    end: "Break free, pass the save, or remove the effect."
+  },
+  {
+    name: "Stunned",
+    color: "var(--red)",
+    save: "Varies",
+    mechanic: "You can't act, and enemies hit you easier.",
+    player: "Another emergency condition. The party should protect you or end the effect fast.",
+    end: "Usually ends on a save or when the source ends."
+  },
+  {
+    name: "Unconscious",
+    color: "var(--red)",
+    save: "Death saves",
+    mechanic: "You are down at 0 HP and out of the fight.",
+    player: "Roll death saves on your turn unless someone heals you or stabilizes you.",
+    end: "Healing, stabilization, or successful death saves."
+  }
+];
+
+const DEFAULT_STATE = {
+  version: 2,
+  campaignId: CAMPAIGN_ID,
+  updatedAt: Date.now(),
+  overview: { activePage: "overview" },
+  characters: {
+    jasmine: { hp: 28, maxHp: 28, tempHp: 0, conditions: [], notes: "", deathSuccesses: 0, deathFails: 0, inspiration: false },
+    wendy: { hp: 27, maxHp: 27, tempHp: 0, conditions: [], notes: "", deathSuccesses: 0, deathFails: 0, inspiration: false },
+    esmeralda: { hp: 24, maxHp: 24, tempHp: 0, conditions: [], notes: "", deathSuccesses: 0, deathFails: 0, inspiration: false },
+    kristoff: { hp: 31, maxHp: 31, tempHp: 0, conditions: [], notes: "", deathSuccesses: 0, deathFails: 0, inspiration: false }
+  },
+  resources: {
+    jasmine: { concentration: false },
+    wendy: { warPriest: [true, true, true], channelDivinity: [true], concentration: false },
+    esmeralda: { bardicInspiration: [true, true, true], concentration: false },
+    kristoff: { secondWind: [true], actionSurge: [true], concentration: false }
+  },
+  spells: {
+    jasmine: {
+      slots: { 1: [true, true] },
+      concentrating: false,
+      preparedSelected: ["hunters_mark", "fog_cloud", "cure_wounds"]
+    },
+    wendy: {
+      slots: { 1: [true, true, true, true], 2: [true, true] },
+      concentrating: false,
+      preparedSelected: ["bless", "healing_word", "cure_wounds", "guiding_bolt", "aid", "lesser_restoration"]
+    },
+    esmeralda: {
+      slots: { 1: [true, true, true, true], 2: [true, true] },
+      concentrating: false,
+      preparedSelected: ["healing_word", "dissonant_whispers", "faerie_fire", "tashas_hideous_laughter", "suggestion", "invisibility"]
+    },
+    kristoff: {
+      slots: { 1: [true, true] },
+      concentrating: false,
+      preparedSelected: ["shield", "magic_missile", "thunderwave"]
     }
-    const size=t.size||70;
-    el.style.left=t.x+'px';el.style.top=t.y+'px';
-    el.style.width=size+'px';el.style.height=size+'px';
-    el.className=`token type-${t.type}`+(selTok===id?' highlighted':'');
-    el.querySelector('img').src=t.url||'';
-    el.querySelector('.token-name').textContent=t.name||'';
-  });
+  },
+  notes: { campaign: "" }
+};
+
+let APP_STATE = deepMerge(structuredCloneSafe(DEFAULT_STATE), loadLocal() || {});
+let PATCH_QUEUE = {};
+let saveTimer = null;
+let firebaseReady = false;
+let liveSyncEnabled = true;
+let applyingRemoteState = false;
+
+window.APP_STATE = APP_STATE;
+
+window.FIREBASE_CONFIG = window.FIREBASE_CONFIG || {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com/",
+  projectId: "YOUR_PROJECT",
+  appId: "YOUR_APP_ID"
+};
+
+function structuredCloneSafe(obj){
+  return JSON.parse(JSON.stringify(obj));
 }
 
-function renderTokList(){
-  const list=document.getElementById('tok-list');list.innerHTML='';
-  Object.entries(tokens).forEach(([id,t])=>{
-    const div=document.createElement('div');
-    div.className='tli'+(selTok===id?' sel':'');
-    div.innerHTML=`<img src="${t.url||''}"><span class="tli-name">${t.name}</span><span class="tli-type">${t.type==='pc'?'PC':'NPC'}</span><button class="tli-del">✕</button>`;
-    div.addEventListener('click',()=>{selTok=id;renderTokens();renderTokList();showInfo(id);});
-    div.querySelector('.tli-del').addEventListener('click',async ev=>{
-      ev.stopPropagation();
-      await remove(ref(db,`s/${sid}/tokens/${id}`));
-      if(selTok===id){selTok=null;closeInfo();}
-    });
-    list.appendChild(div);
-  });
+function deepMerge(target, source){
+  if (!source || typeof source !== "object") return target;
+  for (const key of Object.keys(source)) {
+    const s = source[key];
+    if (s && typeof s === "object" && !Array.isArray(s)) {
+      if (!target[key] || typeof target[key] !== "object" || Array.isArray(target[key])) target[key] = {};
+      deepMerge(target[key], s);
+    } else {
+      target[key] = s;
+    }
+  }
+  return target;
 }
 
-// ── INFO PANE ─────────────────────────────────────────────────────────────────
-function showInfo(id){
-  const t=tokens[id];if(!t)return;
-  document.getElementById('info-pane').classList.add('open');
-  document.getElementById('info-name').textContent=t.name;
-  if(t.type==='pc'){
-    document.getElementById('info-sheet').style.display='block';
-    document.getElementById('info-enemy').style.display='none';
-    document.getElementById('info-sheet-img').src=t.sheetUrl||'';
-  } else {
-    document.getElementById('info-sheet').style.display='none';
-    document.getElementById('info-enemy').style.display='block';
-    document.getElementById('info-enemy-name').textContent=t.name;
-    document.getElementById('info-enemy-lore').textContent=t.lore||'No description.';
+function clamp(n, min, max){
+  n = Number(n) || 0;
+  return Math.max(min, Math.min(max, n));
+}
+
+function saveLocal(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(APP_STATE));
+    setSaveStatus("LOCAL");
+  }catch(err){
+    console.warn("[LocalStorage] Save failed", err);
   }
 }
-window.closeInfo=()=>document.getElementById('info-pane').classList.remove('open');
 
-// ── FOG ───────────────────────────────────────────────────────────────────────
-window.toggleFogMode=()=>{
-  fogMode=!fogMode;
-  document.getElementById('btn-fog').classList.toggle('active',fogMode);
-  toast(fogMode?'Click & drag to place fog':'Fog placement off');
+function loadLocal(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(err){
+    console.warn("[LocalStorage] Load failed", err);
+    return null;
+  }
+}
+
+function pathGet(obj, path){
+  return path.split("/").reduce((acc, part) => acc ? acc[part] : undefined, obj);
+}
+
+function pathSet(obj, path, value){
+  const parts = path.split("/");
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const p = parts[i];
+    if (!cur[p] || typeof cur[p] !== "object") cur[p] = {};
+    cur = cur[p];
+  }
+  cur[parts[parts.length - 1]] = value;
+}
+
+function campaignRoot(){
+  return `campaigns/${CAMPAIGN_ID}`;
+}
+
+function setSaveStatus(text){
+  const el = document.getElementById("save-status");
+  if (el) el.textContent = text;
+}
+
+function firebaseIsReady(){
+  return !!window.fb?.db;
+}
+
+function scheduleFlush(){
+  saveLocal();
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const payload = { ...PATCH_QUEUE };
+    PATCH_QUEUE = {};
+    if (!firebaseIsReady()) return;
+    try {
+      await patchRemote(payload);
+    } catch (err) {
+      console.error("[Firebase] Patch failed", err);
+      setSaveStatus("ERROR");
+    }
+  }, SAVE_DEBOUNCE_MS);
+}
+
+function queuePatch(path, value){
+  if (applyingRemoteState) return;
+  pathSet(APP_STATE, path, value);
+  APP_STATE.updatedAt = Date.now();
+  PATCH_QUEUE[path] = value;
+  scheduleFlush();
+  hydrateUIFromState();
+}
+
+window.CO = {
+  getState: () => APP_STATE,
+  patch(path, value){
+    queuePatch(path, value);
+  },
+  patchMany(obj){
+    if (applyingRemoteState) return;
+    for (const [path, value] of Object.entries(obj)) {
+      pathSet(APP_STATE, path, value);
+      PATCH_QUEUE[path] = value;
+    }
+    APP_STATE.updatedAt = Date.now();
+    scheduleFlush();
+    hydrateUIFromState();
+  },
+  async saveNow(){
+    saveLocal();
+    if (!firebaseIsReady()) return;
+    await saveRemoteFull();
+  },
+  async loadRemote(){
+    const remote = await loadRemoteOnce();
+    if (remote) {
+      APP_STATE = deepMerge(structuredCloneSafe(DEFAULT_STATE), remote);
+      window.APP_STATE = APP_STATE;
+      saveLocal();
+      hydrateUIFromState();
+      bindNotes();
+    }
+    return remote;
+  },
+  enableLiveSync(flag = true){
+    liveSyncEnabled = !!flag;
+  }
 };
-window.clearAllFog=async()=>{if(!isGM)return;await remove(fogRef);toast('All fog cleared');};
 
-function renderFogs(){
-  const layer=document.getElementById('fog-layer');
-  [...layer.querySelectorAll('.fog-rect')].forEach(el=>{if(!fogs[el.dataset.id])el.remove();});
-  Object.entries(fogs).forEach(([id,f])=>{
-    let el=document.getElementById('fog-'+id);
-    if(!el){
-      el=document.createElement('div');
-      el.className='fog-rect';el.id='fog-'+id;el.dataset.id=id;
-      if(isGM){
-        const del=document.createElement('div');del.className='fog-del';del.textContent='✕';
-        del.addEventListener('click',async ev=>{ev.stopPropagation();await remove(ref(db,`s/${sid}/fogs/${id}`));if(selFog===id)selFog=null;});
-        el.appendChild(del);
-        const rh=document.createElement('div');rh.className='fog-resize';
-        rh.addEventListener('mousedown',ev=>{ev.stopPropagation();ev.preventDefault();fogResize=id;fogResizeSW=fogs[id].w;fogResizeSH=fogs[id].h;fogResizeMX=ev.clientX;fogResizeMY=ev.clientY;});
-        el.appendChild(rh);
-        el.addEventListener('mousedown',ev=>{
-          if(ev.button!==0||ev.target.classList.contains('fog-del')||ev.target.classList.contains('fog-resize'))return;
-          ev.stopPropagation();selFog=id;renderFogs();
-          fogDrag=id;const pos=boardPos(ev.clientX,ev.clientY);fogDragOX=pos.x-fogs[id].x;fogDragOY=pos.y-fogs[id].y;
-        });
+async function saveRemoteFull(){
+  if (!firebaseIsReady()) return;
+  setSaveStatus("SYNCING");
+  const r = window.fb.ref(window.fb.db, campaignRoot());
+  const payload = structuredCloneSafe(APP_STATE);
+  payload.updatedAt = Date.now();
+  APP_STATE.updatedAt = payload.updatedAt;
+  await window.fb.set(r, payload);
+  setSaveStatus("SYNCED");
+}
+
+async function patchRemote(partial){
+  if (!firebaseIsReady()) return;
+  setSaveStatus("SYNCING");
+  const r = window.fb.ref(window.fb.db, campaignRoot());
+  const payload = { ...partial, updatedAt: Date.now() };
+  APP_STATE.updatedAt = payload.updatedAt;
+  await window.fb.update(r, payload);
+  setSaveStatus("SYNCED");
+}
+
+async function loadRemoteOnce(){
+  if (!firebaseIsReady()) return null;
+  const r = window.fb.ref(window.fb.db, campaignRoot());
+  const snap = await window.fb.get(r);
+  return snap.exists() ? snap.val() : null;
+}
+
+function subscribeRemote(){
+  if (!firebaseIsReady() || !liveSyncEnabled) return;
+  const r = window.fb.ref(window.fb.db, campaignRoot());
+  window.fb.onValue(r, (snap) => {
+    if (!snap.exists()) return;
+    const remote = snap.val();
+    const localTs = APP_STATE.updatedAt || 0;
+    const remoteTs = remote.updatedAt || 0;
+    if (remoteTs < localTs) return;
+    applyingRemoteState = true;
+    APP_STATE = deepMerge(structuredCloneSafe(DEFAULT_STATE), remote);
+    window.APP_STATE = APP_STATE;
+    saveLocal();
+    hydrateUIFromState();
+    bindNotes();
+    applyingRemoteState = false;
+    setSaveStatus("SYNCED");
+  });
+}
+
+function mod(score){
+  const n = Math.floor((score - 10) / 2);
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+function buildOverview(){
+  const root = document.getElementById("overview-grid");
+  root.innerHTML = "";
+
+  Object.values(CHARS).forEach(c => {
+    const charState = APP_STATE.characters[c.id];
+    const condHtml = (charState.conditions || []).map(name => `<span class="chip">${name}</span>`).join("");
+    const skillsMini = c.skills.slice(0, 4).map(s => `
+      <div class="row prof">
+        <div class="dot"></div>
+        <div class="left">${s.name}</div>
+        <div class="right">${s.val}</div>
+      </div>
+    `).join("");
+
+    const el = document.createElement("div");
+    el.className = "col";
+    el.style.setProperty("--accent", c.color);
+    el.style.setProperty("--head-bg", c.colorBg);
+    el.innerHTML = `
+      <div class="col-head" onclick="showPage('${c.id}', null)">
+        <div class="col-name">${c.name}</div>
+        <div class="col-sub">${c.classLine}</div>
+      </div>
+      <div class="hpbar"><div class="hpfill" id="ob-${c.id}-bar"></div></div>
+
+      <div class="block">
+        <div class="hp-mini">
+          <input id="ob-${c.id}-hp" type="number" min="0" max="${c.maxHp}" value="${charState.hp}" oninput="ovSyncHP('${c.id}')">
+          <span class="slash">/</span>
+          <span class="max">${c.maxHp}</span>
+        </div>
+        <div class="temp-row">
+          <span>TEMP</span>
+          <input id="ob-${c.id}-tmp" type="number" min="0" value="${charState.tempHp}" oninput="ovSyncTmp('${c.id}')">
+        </div>
+        <div class="adjust-row">
+          <input id="ob-${c.id}-amt" type="number" min="0" placeholder="Amt">
+          <button class="btn heal" onclick="ovAdj('${c.id}', 1)">+</button>
+          <button class="btn dmg" onclick="ovAdj('${c.id}', -1)">−</button>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Conditions</div>
+        <div class="chips" id="ob-${c.id}-conds">${condHtml}</div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Combat</div>
+        <div class="grid-2">
+          <div class="stat-box"><div class="stat-k">AC</div><div class="stat-v">${c.ac}</div></div>
+          <div class="stat-box"><div class="stat-k">Init</div><div class="stat-v">${c.initiative}</div></div>
+          <div class="stat-box"><div class="stat-k">Spell DC</div><div class="stat-v">${c.spellDc || "—"}</div></div>
+          <div class="stat-box"><div class="stat-k">Speed</div><div class="stat-v">${c.speed}</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Top Skills</div>
+        <div class="list">${skillsMini}</div>
+      </div>
+
+      <button class="btn detail-btn" onclick="showPage('${c.id}', null)">Full Sheet ▶</button>
+    `;
+    root.appendChild(el);
+  });
+}
+
+function buildCharacterPage(charId){
+  const c = CHARS[charId];
+  const root = document.getElementById(`page-${charId}`);
+  const state = APP_STATE.characters[charId];
+
+  const abilityHtml = Object.entries(c.abilities).map(([k, v]) => `
+    <div class="ability">
+      <div class="name">${k.toUpperCase()}</div>
+      <div class="score">${v}</div>
+      <div class="mod">${mod(v)}</div>
+    </div>
+  `).join("");
+
+  const combatHtml = c.combatStats.map(([k, v]) => `
+    <div class="combat">
+      <div class="k">${k}</div>
+      <div class="v">${v}</div>
+    </div>
+  `).join("");
+
+  const saveHtml = c.saves.map(s => `
+    <div class="row ${s.prof ? "prof" : ""}">
+      <div class="dot"></div>
+      <div class="left">${s.name}</div>
+      <div class="right">${s.val}</div>
+    </div>
+  `).join("");
+
+  const skillHtml = c.skills.map(s => `
+    <div class="row prof">
+      <div class="dot"></div>
+      <div class="left">${s.name}</div>
+      <div class="right">${s.val}</div>
+    </div>
+  `).join("");
+
+  const quickTipsHtml = c.quickTips.map(t => `<div class="helper">${t}</div>`).join("");
+
+  const resourceHtml = (c.resources || []).map(r => renderResourceBlock(c.id, r)).join("");
+  const spellSlotsHtml = renderSpellSlots(c.id);
+  const spellPrepHtml = renderSpellPrepSection(c.id);
+  const cantripHtml = (c.spells?.cantrips || []).map(sp => renderSpell(sp)).join("");
+  const alwaysPreparedHtml = (c.spells?.alwaysPrepared || []).map(sp => renderSpell(sp)).join("");
+  const preparedSelectedHtml = getPreparedSelectedSpells(c.id).map(sp => renderSpell(sp)).join("");
+
+  root.innerHTML = `
+    <div class="sheet" style="--accent:${c.color}">
+      <div class="sheet-head">
+        <div>
+          <div class="sheet-title">${c.name}</div>
+          <div class="sheet-meta">${c.classLine}</div>
+        </div>
+        <div class="sheet-pill">LEVEL ${c.level}</div>
+      </div>
+
+      <div class="sec open">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">HP / Survival</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          <div class="hp-big">
+            <input id="det-${c.id}-hp" type="number" min="0" max="${c.maxHp}" value="${state.hp}" oninput="detSyncHP('${c.id}')">
+            <span class="slash">/</span>
+            <span class="max">${c.maxHp}</span>
+            <div class="temp-wrap">
+              <span>TEMP HP</span>
+              <input id="det-${c.id}-tmp" type="number" min="0" value="${state.tempHp}" oninput="detSyncTmp('${c.id}')">
+            </div>
+          </div>
+          <div class="hp-note">Damage removes temp HP first, then real HP.</div>
+
+          <div class="control-row">
+            <input id="det-${c.id}-amt" type="number" min="0" placeholder="Amt">
+            <button class="btn heal" onclick="detAdj('${c.id}', 1)">Heal</button>
+            <button class="btn dmg" onclick="detAdj('${c.id}', -1)">Damage</button>
+            <button class="btn" onclick="fullHeal('${c.id}')">Full Heal</button>
+          </div>
+
+          <div class="ds-row">
+            <div class="ds-group">
+              <div class="ds-label">Death Saves Success</div>
+              <div class="ds-dots" id="ds-success-${c.id}"></div>
+            </div>
+            <div class="ds-group">
+              <div class="ds-label">Death Saves Fail</div>
+              <div class="ds-dots" id="ds-fail-${c.id}"></div>
+            </div>
+            <button class="inspiration" id="insp-${c.id}" onclick="toggleInspiration('${c.id}')">Inspiration</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec open">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">Quick Turn Help</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          ${quickTipsHtml}
+          <div class="warn"><strong>Beginner reminder:</strong> You usually get <strong>Move + Action + Bonus Action (if you have one) + Reaction (outside your turn)</strong>.</div>
+        </div>
+      </div>
+
+      <div class="sec open">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">Attacks / What To Roll</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          <div class="attack-wrap">
+            <label class="attack-label" for="attack-select-${c.id}">Pick Attack / Spell</label>
+            <select id="attack-select-${c.id}" onchange="selectAttack('${c.id}', this.value)"></select>
+            <div class="attack-readout" id="attack-readout-${c.id}"></div>
+            <div class="attack-tip">
+              <strong>Rule of thumb:</strong> If it says <strong>roll to hit</strong>, <em>you</em> roll the d20. If it says <strong>save vs DC</strong>, <em>the enemy</em> rolls instead.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec open">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">Resources / Spell Slots</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          ${spellSlotsHtml}
+          <div class="resource-grid">${resourceHtml}</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">Abilities / Saves / Skills</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          <div class="abilities">${abilityHtml}</div>
+          <div class="combat-grid">${combatHtml}</div>
+
+          <div style="height:10px"></div>
+          <div class="helper"><strong>How to avoid getting hit:</strong> raise AC with cover / defensive spells, stay behind the front line if squishy, and break line of sight if possible.</div>
+
+          <div style="margin-top:.6rem" class="block-label">Saving Throws</div>
+          <div class="list">${saveHtml}</div>
+
+          <div style="margin-top:.6rem" class="block-label">Skills</div>
+          <div class="list">${skillHtml}</div>
+        </div>
+      </div>
+
+      <div class="sec open">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">Spells / Prepared Spells</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          <div class="helper"><strong>No copyrighted rules text here:</strong> these are simplified play notes only.</div>
+
+          ${c.spells?.cantrips?.length ? `
+            <div class="prep-wrap">
+              <div class="prep-header">
+                <div class="prep-title">Cantrips</div>
+                <div class="prep-count">No spell slots</div>
+              </div>
+              <div class="spell-list">${cantripHtml}</div>
+            </div>
+          ` : ""}
+
+          ${c.spells?.alwaysPrepared?.length ? `
+            <div class="prep-wrap">
+              <div class="prep-header">
+                <div class="prep-title">Always Prepared</div>
+                <div class="prep-count">Subclass / Domain</div>
+              </div>
+              <div class="spell-list">${alwaysPreparedHtml}</div>
+            </div>
+          ` : ""}
+
+          ${c.spells?.preparedOptions?.length ? `
+            <div class="prep-wrap">
+              <div class="prep-header">
+                <div class="prep-title">Choose Prepared Spells</div>
+                <div class="prep-count">${c.preparedLimit} selected max</div>
+              </div>
+              ${spellPrepHtml}
+            </div>
+          ` : ""}
+
+          ${c.spells?.preparedOptions?.length ? `
+            <div class="prep-wrap">
+              <div class="prep-header">
+                <div class="prep-title">Currently Prepared</div>
+                <div class="prep-count">These are the spells shown below</div>
+              </div>
+              <div class="spell-list" id="prepared-list-${c.id}">${preparedSelectedHtml}</div>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-head" onclick="toggleSection(this)">
+          <div class="sec-title">Conditions / Notes</div>
+          <div class="sec-arrow">▶</div>
+        </div>
+        <div class="sec-body">
+          <div class="block-label">Active Conditions</div>
+          <div class="chips" id="det-${c.id}-conds"></div>
+
+          <div style="height:10px"></div>
+          <div class="block-label">Toggle Common Conditions</div>
+          <div class="chips" id="cond-toggle-${c.id}"></div>
+
+          <div style="height:10px"></div>
+          <div class="block-label">Player Notes</div>
+          <textarea class="note-box" id="notes-${c.id}" placeholder="Reminders, loot, concentration target, who is marked, who needs healing..."></textarea>
+
+          <div class="rest-row">
+            <button class="rest-btn short" onclick="shortRest('${c.id}')">Short Rest</button>
+            <button class="rest-btn long" onclick="longRest('${c.id}')">Long Rest</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-space"></div>
+    </div>
+  `;
+}
+
+function renderResourceBlock(charId, resource){
+  const state = APP_STATE.resources?.[charId] || {};
+  if (resource.type === "toggle") {
+    const on = !!state[resource.key];
+    return `
+      <div class="resource">
+        <div class="resource-label">${resource.label}</div>
+        <button class="btn ${on ? "heal" : ""}" onclick="toggleResource('${charId}','${resource.key}')">${on ? "ON" : "OFF"}</button>
+        <div class="resource-note">${resource.note}</div>
+      </div>
+    `;
+  }
+
+  const arr = Array.isArray(state[resource.key]) ? state[resource.key] : Array.from({ length: resource.count }, () => true);
+  const pips = arr.map((v, idx) => `
+    <div class="pip ${v ? "" : "spent"}" onclick="togglePip('${charId}','${resource.key}',${idx})">${idx + 1}</div>
+  `).join("");
+
+  return `
+    <div class="resource">
+      <div class="resource-label">${resource.label}</div>
+      <div class="pips">${pips}</div>
+      <div class="resource-note">${resource.note}</div>
+    </div>
+  `;
+}
+
+function renderSpellSlots(charId){
+  const slots = APP_STATE.spells?.[charId]?.slots || {};
+  const levels = Object.keys(slots).sort((a, b) => Number(a) - Number(b));
+  if (!levels.length) return "";
+
+  const rows = levels.map(level => {
+    const dots = slots[level].map((v, idx) => `
+      <div class="slot-dot ${v ? "" : "spent"}" onclick="toggleSpellSlot('${charId}', ${level}, ${idx})"></div>
+    `).join("");
+    return `
+      <div class="slot-row">
+        <div class="slot-label">L${level}</div>
+        ${dots}
+      </div>
+    `;
+  }).join("");
+
+  const concentrating = !!APP_STATE.spells?.[charId]?.concentrating;
+
+  return `
+    <div class="resource" style="margin-bottom:.6rem">
+      <div class="resource-label">Spell Slots</div>
+      <div class="spell-slots">${rows}</div>
+      <div class="conc-toggle ${concentrating ? "on" : ""}" onclick="toggleConcentration('${charId}')">◎ Concentrating</div>
+      <div class="resource-note">Tap circles to spend / restore slots. Cantrips do not spend slots. Only one concentration spell at a time.</div>
+    </div>
+  `;
+}
+
+function renderSpell(spell){
+  const tags = (spell.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+  const meta = Object.entries(spell.meta || {}).map(([k, v]) => `
+    <div class="meta">
+      <div class="k">${k}</div>
+      <div class="v">${v}</div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="spell">
+      <div class="spell-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="spell-badge">${spell.badge}</div>
+        <div class="spell-name">${spell.name}</div>
+        <div class="spell-tags">${tags}</div>
+        <div class="spell-arrow">▶</div>
+      </div>
+      <div class="spell-body">
+        <div class="spell-meta">${meta}</div>
+        <div class="spell-desc">${spell.desc}</div>
+        <div class="helper" style="margin-top:.45rem"><strong>Beginner use:</strong> ${spell.beginner}</div>
+      </div>
+    </div>
+  `;
+}
+
+
+function getPreparedSelectedIds(charId){
+  const selected = APP_STATE.spells?.[charId]?.preparedSelected;
+  return Array.isArray(selected) ? selected : [];
+}
+
+function getPreparedSelectedSpells(charId){
+  const selectedIds = new Set(getPreparedSelectedIds(charId));
+  const options = CHARS[charId]?.spells?.preparedOptions || [];
+  return options.filter(sp => selectedIds.has(sp.id));
+}
+
+function renderSpellPrepSection(charId){
+  const c = CHARS[charId];
+  const selected = new Set(getPreparedSelectedIds(charId));
+  const options = c.spells?.preparedOptions || [];
+  const selectedCount = selected.size;
+  const max = c.preparedLimit || options.length;
+
+  const cards = options.map(sp => {
+    const checked = selected.has(sp.id);
+    const disabled = !checked && selectedCount >= max;
+    return `
+      <div class="prep-card ${checked ? "on" : ""} ${disabled ? "prep-lock" : ""}">
+        <div class="prep-head">
+          <input
+            class="prep-check"
+            type="checkbox"
+            ${checked ? "checked" : ""}
+            ${disabled ? "disabled" : ""}
+            onchange="togglePreparedSpell('${charId}','${sp.id}')"
+          >
+          <div class="prep-name">${sp.name}</div>
+          <div class="prep-mini">${sp.badge}</div>
+        </div>
+        <div class="prep-body">
+          <div><strong>Use:</strong> ${sp.beginner}</div>
+          <div class="prep-help">${sp.tags?.join(" · ") || ""}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="prep-grid">
+      <div class="helper"><strong>Prepared spells:</strong> You can toggle which spells are ready to use. Cantrips and “Always Prepared” spells are separate and do not use these checkboxes.</div>
+      <div id="prep-counter-${charId}" class="prep-count" style="margin-bottom:.35rem">${selectedCount} / ${max} selected</div>
+      ${cards}
+    </div>
+  `;
+}
+
+window.togglePreparedSpell = function(charId, spellId){
+  const c = CHARS[charId];
+  const max = c.preparedLimit || 99;
+  const current = [...getPreparedSelectedIds(charId)];
+  const set = new Set(current);
+
+  if (set.has(spellId)) {
+    set.delete(spellId);
+  } else {
+    if (set.size >= max) return;
+    set.add(spellId);
+  }
+
+  window.CO.patch(`spells/${charId}/preparedSelected`, Array.from(set));
+  refreshPreparedSpellUI(charId);
+};
+
+function refreshPreparedSpellUI(charId){
+  const page = document.getElementById(`page-${charId}`);
+  if (!page) return;
+
+  const prepWrap = page.querySelector(".prep-wrap .prep-grid");
+  if (prepWrap) {
+    prepWrap.outerHTML = renderSpellPrepSection(charId);
+  }
+
+  const list = document.getElementById(`prepared-list-${charId}`);
+  if (list) {
+    list.innerHTML = getPreparedSelectedSpells(charId).map(sp => renderSpell(sp)).join("");
+  }
+}
+
+function buildConditionsPage(){
+  const root = document.getElementById("conditions-grid");
+  root.innerHTML = "";
+  CONDITIONS.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "cond";
+    el.innerHTML = `
+      <div class="cond-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="cond-name" style="color:${c.color}">${c.name}</div>
+        <div class="cond-save">${c.save ? "Save: " + c.save : ""}</div>
+        <div class="cond-arrow">▶</div>
+      </div>
+      <div class="cond-body">
+        <div class="cond-mech">${c.mechanic}</div>
+        <div class="cond-player">
+          <div class="cond-player-label">What you actually do</div>
+          <div class="cond-player-text">${c.player}</div>
+        </div>
+        <div class="cond-end"><strong>How it ends:</strong> ${c.end}</div>
+      </div>
+    `;
+    root.appendChild(el);
+  });
+}
+
+function hydrateUIFromState(){
+  Object.values(CHARS).forEach(c => {
+    const state = APP_STATE.characters[c.id];
+    const hp = clamp(state.hp, 0, c.maxHp);
+    const percent = Math.round((hp / c.maxHp) * 100);
+
+    const obHp = document.getElementById(`ob-${c.id}-hp`);
+    if (obHp && Number(obHp.value) !== hp) obHp.value = hp;
+
+    const detHp = document.getElementById(`det-${c.id}-hp`);
+    if (detHp && Number(detHp.value) !== hp) detHp.value = hp;
+
+    const obTmp = document.getElementById(`ob-${c.id}-tmp`);
+    if (obTmp && Number(obTmp.value) !== (state.tempHp || 0)) obTmp.value = state.tempHp || 0;
+
+    const detTmp = document.getElementById(`det-${c.id}-tmp`);
+    if (detTmp && Number(detTmp.value) !== (state.tempHp || 0)) detTmp.value = state.tempHp || 0;
+
+    const bar = document.getElementById(`ob-${c.id}-bar`);
+    if (bar) bar.style.width = `${percent}%`;
+
+    const condHtml = (state.conditions || []).map(name => `<span class="chip">${name}</span>`).join("");
+    const obConds = document.getElementById(`ob-${c.id}-conds`);
+    if (obConds) obConds.innerHTML = condHtml;
+
+    const detConds = document.getElementById(`det-${c.id}-conds`);
+    if (detConds) detConds.innerHTML = condHtml;
+
+    hydrateDeathSaves(c.id);
+    hydrateInspiration(c.id);
+    hydrateConditionToggles(c.id);
+    hydrateNotes(c.id);
+    hydrateAttackSelect(c.id);
+    refreshPreparedSpellUI(c.id);
+  });
+
+  Object.keys(CHARS).forEach(cid => {
+    const page = document.getElementById(`page-${cid}`);
+    if (page && page.innerHTML) {
+      const sec = page.querySelector(".sec:nth-child(5) .sec-body");
+      if (sec) {
+        const slotContainer = sec.querySelector(".resource");
+        if (slotContainer) {
+          slotContainer.outerHTML = renderSpellSlots(cid);
+          const rg = sec.querySelector(".resource-grid");
+          if (rg) {
+            rg.innerHTML = (CHARS[cid].resources || []).map(r => renderResourceBlock(cid, r)).join("");
+          }
+        }
       }
-      layer.appendChild(el);
-    }
-    el.style.left=f.x+'px';el.style.top=f.y+'px';el.style.width=f.w+'px';el.style.height=f.h+'px';
-    el.classList.toggle('sel',selFog===id);
-  });
-}
-
-async function startFogDraw(cx,cy){
-  const pos=boardPos(cx,cy);fogDrawSX=pos.x;fogDrawSY=pos.y;
-  fogDrawId=push(fogRef).key;
-  await set(ref(db,`s/${sid}/fogs/${fogDrawId}`),{x:pos.x,y:pos.y,w:4,h:4});
-  fogDrawing=true;
-}
-async function updateFogDraw(cx,cy){
-  if(!fogDrawing||!fogDrawId)return;
-  const pos=boardPos(cx,cy);
-  const x=Math.min(fogDrawSX,pos.x),y=Math.min(fogDrawSY,pos.y);
-  const w=Math.abs(pos.x-fogDrawSX),h=Math.abs(pos.y-fogDrawSY);
-  const el=document.getElementById('fog-'+fogDrawId);
-  if(el){el.style.left=x+'px';el.style.top=y+'px';el.style.width=w+'px';el.style.height=h+'px';}
-  await update(ref(db,`s/${sid}/fogs/${fogDrawId}`),{x,y,w:Math.max(w,4),h:Math.max(h,4)});
-}
-async function endFogDraw(){
-  if(!fogDrawing)return;fogDrawing=false;
-  const f=fogs[fogDrawId];
-  if(f&&f.w<8&&f.h<8)await remove(ref(db,`s/${sid}/fogs/${fogDrawId}`));
-  fogDrawId=null;
-}
-
-// ── PINGS ─────────────────────────────────────────────────────────────────────
-function showPing(x,y,name,id){
-  if(shownPings.has(id))return;shownPings.add(id);
-  const layer=document.getElementById('ping-layer');
-  const dot=document.createElement('div');dot.className='ping-dot';dot.style.left=x+'px';dot.style.top=y+'px';
-  const lbl=document.createElement('div');lbl.className='ping-lbl';lbl.textContent=name;dot.appendChild(lbl);
-  layer.appendChild(dot);
-  setTimeout(async()=>{dot.remove();shownPings.delete(id);try{await remove(ref(db,`s/${sid}/pings/${id}`));}catch{}},2300);
-}
-async function firePing(cx,cy){
-  const pos=boardPos(cx,cy);
-  if(pos.x<0||pos.y<0||pos.x>mapW||pos.y>mapH)return;
-  const id=push(pingRef).key;
-  await set(ref(db,`s/${sid}/pings/${id}`),{x:pos.x,y:pos.y,name:myName,ts:Date.now()});
-}
-
-// ── BOARD EVENTS ──────────────────────────────────────────────────────────────
-function initBoard(){
-  const board=document.getElementById('board');
-  board.addEventListener('wheel',e=>{
-    e.preventDefault();
-    const d=e.deltaY<0?1.1:0.9;
-    const r=board.getBoundingClientRect();
-    const mx=e.clientX-r.left,my=e.clientY-r.top;
-    const ns=Math.max(0.1,Math.min(8,scale*d));
-    panX=mx-(mx-panX)*(ns/scale);panY=my-(my-panY)*(ns/scale);scale=ns;
-    applyTransform();
-  },{passive:false});
-
-  board.addEventListener('mousedown',e=>{
-    if(e.button===1||e.button===2){e.preventDefault();panning=true;pSX=e.clientX;pSY=e.clientY;pOX=panX;pOY=panY;return;}
-    if(e.button===0&&isGM&&fogMode&&!e.target.closest('.token')&&!e.target.closest('.fog-rect')){startFogDraw(e.clientX,e.clientY);return;}
-    if(e.button===0&&!e.target.closest('.token')&&!e.target.closest('.fog-rect')){selFog=null;renderFogs();}
-  });
-
-  board.addEventListener('dblclick',e=>{
-    if(!e.target.closest('.token')&&!e.target.closest('.fog-rect')&&mapW>0)firePing(e.clientX,e.clientY);
-  });
-
-  board.addEventListener('contextmenu',e=>e.preventDefault());
-
-  document.addEventListener('mousemove',e=>{
-    if(panning){panX=pOX+(e.clientX-pSX);panY=pOY+(e.clientY-pSY);applyTransform();return;}
-    if(fogDrawing){updateFogDraw(e.clientX,e.clientY);return;}
-    if(fogResize){
-      const dx=(e.clientX-fogResizeMX)/scale,dy=(e.clientY-fogResizeMY)/scale;
-      const w=Math.max(20,fogResizeSW+dx),h=Math.max(20,fogResizeSH+dy);
-      const el=document.getElementById('fog-'+fogResize);
-      if(el){el.style.width=w+'px';el.style.height=h+'px';}
-      return;
-    }
-    if(fogDrag){
-      const pos=boardPos(e.clientX,e.clientY);
-      const el=document.getElementById('fog-'+fogDrag);
-      if(el){el.style.left=(pos.x-fogDragOX)+'px';el.style.top=(pos.y-fogDragOY)+'px';}
-      return;
-    }
-    if(dragId){
-      const pos=boardPos(e.clientX,e.clientY);
-      const el=document.getElementById('tok-'+dragId);
-      if(el){el.style.left=(pos.x-dOX)+'px';el.style.top=(pos.y-dOY)+'px';}
-    }
-  });
-
-  document.addEventListener('mouseup',async e=>{
-    if(panning){panning=false;return;}
-    if(fogDrawing){endFogDraw();return;}
-    if(fogResize){
-      const dx=(e.clientX-fogResizeMX)/scale,dy=(e.clientY-fogResizeMY)/scale;
-      await update(ref(db,`s/${sid}/fogs/${fogResize}`),{w:Math.max(20,fogResizeSW+dx),h:Math.max(20,fogResizeSH+dy)});
-      fogResize=null;return;
-    }
-    if(fogDrag){
-      const pos=boardPos(e.clientX,e.clientY);
-      await update(ref(db,`s/${sid}/fogs/${fogDrag}`),{x:pos.x-fogDragOX,y:pos.y-fogDragOY});
-      fogDrag=null;return;
-    }
-    if(dragId){
-      const pos=boardPos(e.clientX,e.clientY);
-      await update(ref(db,`s/${sid}/tokens/${dragId}`),{x:pos.x-dOX,y:pos.y-dOY});
-      const el=document.getElementById('tok-'+dragId);if(el)el.classList.remove('dragging');
-      dragId=null;
     }
   });
 }
 
-function applyTransform(){document.getElementById('board-wrap').style.transform=`translate(${panX}px,${panY}px) scale(${scale})`;}
-function boardPos(cx,cy){const r=document.getElementById('board').getBoundingClientRect();return{x:(cx-r.left-panX)/scale,y:(cy-r.top-panY)/scale};}
+function hydrateDeathSaves(charId){
+  const state = APP_STATE.characters[charId];
+  const successWrap = document.getElementById(`ds-success-${charId}`);
+  const failWrap = document.getElementById(`ds-fail-${charId}`);
+  if (successWrap) {
+    successWrap.innerHTML = Array.from({ length: 3 }, (_, i) => `
+      <div class="ds-dot success ${i < state.deathSuccesses ? "on" : ""}" onclick="setDeathSave('${charId}','success',${i + 1})"></div>
+    `).join("");
+  }
+  if (failWrap) {
+    failWrap.innerHTML = Array.from({ length: 3 }, (_, i) => `
+      <div class="ds-dot fail ${i < state.deathFails ? "on" : ""}" onclick="setDeathSave('${charId}','fail',${i + 1})"></div>
+    `).join("");
+  }
+}
 
-// ── DICE ──────────────────────────────────────────────────────────────────────
-window.roll=async(sides)=>{
-  const qty=Math.max(1,parseInt(document.getElementById('qty').value)||1);
-  const mod=parseInt(document.getElementById('mod').value)||0;
-  const rolls=Array.from({length:qty},()=>Math.floor(Math.random()*sides)+1);
-  const total=rolls.reduce((a,b)=>a+b,0)+mod;
-  const crit=sides===20&&qty===1&&rolls[0]===20;
-  const fumble=sides===20&&qty===1&&rolls[0]===1;
-  await push(rollRef,{player:myName,dice:`${qty}d${sides}`,rolls,mod,total,crit,fumble,ts:Date.now()});
+function hydrateInspiration(charId){
+  const btn = document.getElementById(`insp-${charId}`);
+  if (!btn) return;
+  const on = !!APP_STATE.characters[charId].inspiration;
+  btn.classList.toggle("on", on);
+}
+
+function hydrateConditionToggles(charId){
+  const wrap = document.getElementById(`cond-toggle-${charId}`);
+  if (!wrap) return;
+  const active = new Set(APP_STATE.characters[charId].conditions || []);
+  wrap.innerHTML = CONDITIONS.map(c => {
+    const on = active.has(c.name);
+    return `<button class="btn small ${on ? "dmg" : ""}" onclick="toggleCondition('${charId}','${escapeAttr(c.name)}')">${c.name}</button>`;
+  }).join("");
+}
+
+function hydrateNotes(charId){
+  const ta = document.getElementById(`notes-${charId}`);
+  if (!ta) return;
+  const next = APP_STATE.characters[charId].notes || "";
+  if (ta.value !== next) ta.value = next;
+}
+
+function bindNotes(){
+  Object.keys(CHARS).forEach(charId => {
+    const ta = document.getElementById(`notes-${charId}`);
+    if (!ta || ta.dataset.bound === "1") return;
+    ta.dataset.bound = "1";
+    ta.addEventListener("input", () => {
+      window.CO.patch(`characters/${charId}/notes`, ta.value);
+    });
+  });
+}
+
+function hydrateAttackSelect(charId){
+  const select = document.getElementById(`attack-select-${charId}`);
+  if (!select) return;
+
+  if (select.dataset.built !== "1") {
+    select.dataset.built = "1";
+    select.innerHTML = "";
+    CHARS[charId].attacks.forEach((atk, idx) => {
+      const opt = document.createElement("option");
+      opt.value = atk.id;
+      opt.textContent = atk.name;
+      select.appendChild(opt);
+      if (idx === 0) select.value = atk.id;
+    });
+  }
+
+  selectAttack(charId, select.value || CHARS[charId].attacks[0]?.id);
+}
+
+window.selectAttack = function(charId, attackId){
+  const atk = (CHARS[charId].attacks || []).find(a => a.id === attackId) || CHARS[charId].attacks[0];
+  const out = document.getElementById(`attack-readout-${charId}`);
+  const select = document.getElementById(`attack-select-${charId}`);
+
+  if (select && select.value !== atk.id) select.value = atk.id;
+  if (!out || !atk) return;
+
+  out.innerHTML = `
+    <div><strong>Action Type:</strong> ${atk.action}</div>
+    <div><strong>What to roll:</strong> ${atk.toHit}</div>
+    <div><strong>If it works:</strong> ${atk.damage}</div>
+    ${atk.range ? `<div><strong>Range:</strong> ${atk.range}</div>` : ""}
+    ${atk.notes ? `<div><strong>Use it when:</strong> ${atk.notes}</div>` : ""}
+    ${atk.defense ? `<div><strong>How to avoid getting hit while using it:</strong> ${atk.defense}</div>` : ""}
+  `;
 };
-window.rollExpr=async()=>{
-  const expr=prompt('Dice expression (e.g. 2d6+3):');if(!expr)return;
-  const m=expr.match(/(\d+)d(\d+)([+-]\d+)?/i);
-  if(!m){toast('Invalid — try 2d6+3');return;}
-  document.getElementById('qty').value=m[1];document.getElementById('mod').value=parseInt(m[3]||'0');
-  roll(parseInt(m[2]));
-};
-function renderRolls(rolls){
-  const log=document.getElementById('rlog');log.innerHTML='';
-  [...rolls].reverse().slice(0,40).forEach(r=>{
-    const div=document.createElement('div');
-    div.className='re'+(r.crit?' crit':r.fumble?' fumble':'');
-    const ms=r.mod>0?`+${r.mod}`:r.mod<0?`${r.mod}`:'';
-    const flag=r.crit?' 🌟':r.fumble?' 💀':'';
-    div.innerHTML=`<span class="who">${r.player}</span> ${r.dice}${ms} → <span class="tot">${r.total}</span>${flag}<div class="brk">[${r.rolls.join(', ')}]${ms}</div>`;
-    log.appendChild(div);
+
+function setCharHp(charId, hp){
+  const c = CHARS[charId];
+  hp = clamp(hp, 0, c.maxHp);
+  window.CO.patch(`characters/${charId}/hp`, hp);
+}
+
+function setCharTemp(charId, tempHp){
+  tempHp = Math.max(0, Number(tempHp) || 0);
+  window.CO.patch(`characters/${charId}/tempHp`, tempHp);
+}
+
+function adjustHp(charId, delta){
+  const c = APP_STATE.characters[charId];
+  const maxHp = CHARS[charId].maxHp;
+  let hp = Number(c.hp) || 0;
+  let tempHp = Number(c.tempHp) || 0;
+  delta = Number(delta) || 0;
+
+  if (delta < 0) {
+    let dmg = Math.abs(delta);
+    if (tempHp > 0) {
+      const absorbed = Math.min(tempHp, dmg);
+      tempHp -= absorbed;
+      dmg -= absorbed;
+    }
+    hp = Math.max(0, hp - dmg);
+  } else {
+    hp = Math.min(maxHp, hp + delta);
+  }
+
+  window.CO.patchMany({
+    [`characters/${charId}/hp`]: hp,
+    [`characters/${charId}/tempHp`]: tempHp
   });
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-window.copySid=()=>navigator.clipboard.writeText(sid).then(()=>toast('Session ID copied'));
-let toastT;
-window.toast=msg=>{const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2600);};
+window.ovSyncHP = function(charId){
+  const input = document.getElementById(`ob-${charId}-hp`);
+  if (!input) return;
+  setCharHp(charId, Number(input.value || 0));
+};
+
+window.detSyncHP = function(charId){
+  const input = document.getElementById(`det-${charId}-hp`);
+  if (!input) return;
+  setCharHp(charId, Number(input.value || 0));
+};
+
+window.ovSyncTmp = function(charId){
+  const input = document.getElementById(`ob-${charId}-tmp`);
+  if (!input) return;
+  setCharTemp(charId, Number(input.value || 0));
+};
+
+window.detSyncTmp = function(charId){
+  const input = document.getElementById(`det-${charId}-tmp`);
+  if (!input) return;
+  setCharTemp(charId, Number(input.value || 0));
+};
+
+window.ovAdj = function(charId, sign){
+  const input = document.getElementById(`ob-${charId}-amt`);
+  const amt = Math.max(0, Number(input?.value || 0));
+  if (!amt) return;
+  adjustHp(charId, sign > 0 ? amt : -amt);
+  if (input) input.value = "";
+};
+
+window.detAdj = function(charId, sign){
+  const input = document.getElementById(`det-${charId}-amt`);
+  const amt = Math.max(0, Number(input?.value || 0));
+  if (!amt) return;
+  adjustHp(charId, sign > 0 ? amt : -amt);
+  if (input) input.value = "";
+};
+
+window.fullHeal = function(charId){
+  const c = CHARS[charId];
+  window.CO.patchMany({
+    [`characters/${charId}/hp`]: c.maxHp,
+    [`characters/${charId}/tempHp`]: 0,
+    [`characters/${charId}/deathSuccesses`]: 0,
+    [`characters/${charId}/deathFails`]: 0
+  });
+};
+
+window.setDeathSave = function(charId, kind, count){
+  if (kind === "success") {
+    window.CO.patch(`characters/${charId}/deathSuccesses`, count);
+  } else {
+    window.CO.patch(`characters/${charId}/deathFails`, count);
+  }
+};
+
+window.toggleInspiration = function(charId){
+  const cur = !!APP_STATE.characters[charId].inspiration;
+  window.CO.patch(`characters/${charId}/inspiration`, !cur);
+};
+
+window.togglePip = function(charId, key, idx){
+  const arr = Array.isArray(APP_STATE.resources?.[charId]?.[key])
+    ? [...APP_STATE.resources[charId][key]]
+    : [];
+  if (arr[idx] == null) return;
+  arr[idx] = !arr[idx];
+  window.CO.patch(`resources/${charId}/${key}`, arr);
+};
+
+window.toggleResource = function(charId, key){
+  const cur = !!APP_STATE.resources?.[charId]?.[key];
+  window.CO.patch(`resources/${charId}/${key}`, !cur);
+};
+
+window.toggleSpellSlot = function(charId, level, idx){
+  const slots = APP_STATE.spells?.[charId]?.slots?.[level];
+  if (!Array.isArray(slots) || slots[idx] == null) return;
+  const next = [...slots];
+  next[idx] = !next[idx];
+  window.CO.patch(`spells/${charId}/slots/${level}`, next);
+};
+
+window.toggleConcentration = function(charId){
+  const cur = !!APP_STATE.spells?.[charId]?.concentrating;
+  window.CO.patch(`spells/${charId}/concentrating`, !cur);
+};
+
+window.toggleCondition = function(charId, name){
+  const cur = new Set(APP_STATE.characters[charId].conditions || []);
+  if (cur.has(name)) cur.delete(name);
+  else cur.add(name);
+  window.CO.patch(`characters/${charId}/conditions`, Array.from(cur));
+};
+
+window.shortRest = function(charId){
+  const updates = {};
+
+  if (charId === "kristoff") {
+    updates[`resources/${charId}/actionSurge`] = [true];
+    updates[`resources/${charId}/secondWind`] = [true];
+  }
+
+  if (charId === "esmeralda") {
+    updates[`resources/${charId}/bardicInspiration`] = [true, true, true];
+  }
+
+  if (Object.keys(updates).length) {
+    window.CO.patchMany(updates);
+  }
+};
+
+window.longRest = function(charId){
+  const updates = {
+    [`characters/${charId}/hp`]: CHARS[charId].maxHp,
+    [`characters/${charId}/tempHp`]: 0,
+    [`characters/${charId}/deathSuccesses`]: 0,
+    [`characters/${charId}/deathFails`]: 0,
+    [`characters/${charId}/conditions`]: []
+  };
+
+  const c = CHARS[charId];
+
+  if (c.spells?.slots) {
+    updates[`spells/${charId}/slots`] = structuredCloneSafe(c.spells.slots);
+    updates[`spells/${charId}/concentrating`] = false;
+  }
+
+  if (charId === "wendy") {
+    updates[`resources/${charId}/warPriest`] = [true, true, true];
+    updates[`resources/${charId}/channelDivinity`] = [true];
+    updates[`resources/${charId}/concentration`] = false;
+  }
+
+  if (charId === "esmeralda") {
+    updates[`resources/${charId}/bardicInspiration`] = [true, true, true];
+    updates[`resources/${charId}/concentration`] = false;
+  }
+
+  if (charId === "kristoff") {
+    updates[`resources/${charId}/secondWind`] = [true];
+    updates[`resources/${charId}/actionSurge`] = [true];
+    updates[`resources/${charId}/concentration`] = false;
+  }
+
+  if (charId === "jasmine") {
+    updates[`resources/${charId}/concentration`] = false;
+  }
+
+  window.CO.patchMany(updates);
+};
+
+window.toggleSection = function(head){
+  const sec = head.closest(".sec");
+  if (sec) sec.classList.toggle("open");
+};
+
+window.showPage = function(pageId, btn){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const page = document.getElementById(`page-${pageId}`);
+  if (page) page.classList.add("active");
+
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  else {
+    const tab = Array.from(document.querySelectorAll(".tab")).find(t => {
+      const label = t.textContent.trim().toLowerCase();
+      return label === pageId.toLowerCase();
+    });
+    if (tab) tab.classList.add("active");
+  }
+
+  window.CO.patch("overview/activePage", pageId);
+};
+
+function escapeAttr(str){
+  return String(str).replaceAll("'", "\\'");
+}
+
+function initFirebase(){
+  const hasPlaceholder = Object.values(window.FIREBASE_CONFIG).some(v => String(v).includes("YOUR_"));
+  if (hasPlaceholder) {
+    console.warn("[Firebase] Placeholder config detected. Running local-only.");
+    setSaveStatus("LOCAL ONLY");
+    return;
+  }
+
+  const app = initializeApp(window.FIREBASE_CONFIG);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  signInAnonymously(auth)
+    .then(() => {
+      window.fb = { db, auth, ref, set, update, get, onValue };
+      firebaseReady = true;
+      window.dispatchEvent(new CustomEvent("firebase-ready"));
+    })
+    .catch(err => {
+      console.error("[Firebase] Anonymous auth failed", err);
+      setSaveStatus("AUTH ERR");
+    });
+}
+
+async function initSync(){
+  if (!firebaseIsReady()) return;
+  try {
+    const remote = await loadRemoteOnce();
+    if (!remote) {
+      await saveRemoteFull();
+    } else {
+      const localTs = APP_STATE.updatedAt || 0;
+      const remoteTs = remote.updatedAt || 0;
+      if (remoteTs >= localTs) {
+        APP_STATE = deepMerge(structuredCloneSafe(DEFAULT_STATE), remote);
+        window.APP_STATE = APP_STATE;
+        saveLocal();
+        hydrateUIFromState();
+        bindNotes();
+      } else {
+        await saveRemoteFull();
+      }
+    }
+    subscribeRemote();
+  } catch (err) {
+    console.error("[Firebase] Init sync failed", err);
+    setSaveStatus("ERROR");
+  }
+}
+
+function buildAll(){
+  buildOverview();
+  Object.keys(CHARS).forEach(buildCharacterPage);
+  buildConditionsPage();
+  hydrateUIFromState();
+  bindNotes();
+
+  const activePage = APP_STATE.overview?.activePage || "overview";
+  const tab = Array.from(document.querySelectorAll(".tab")).find(t => t.textContent.trim().toLowerCase() === activePage.toLowerCase());
+  showPage(activePage, tab || document.querySelector(".tab"));
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  buildAll();
+  initFirebase();
+});
+
+window.addEventListener("firebase-ready", async () => {
+  await initSync();
+});
 </script>
 </body>
 </html>
