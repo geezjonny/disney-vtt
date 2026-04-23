@@ -1932,42 +1932,6 @@ window.FIREBASE_CONFIG = window.FIREBASE_CONFIG || {
   appId: "1:438615552024:web:83e74d2afe759c624a136d"
 };
 
-function structuredCloneSafe(obj){
-  return JSON.parse(JSON.stringify(obj));
-}
-
-function deepMerge(target, source){
-  if (source == null) return target;
-
-  // Arrays should replace entirely, not be recursively merged as objects
-  if (Array.isArray(source)) {
-    return structuredCloneSafe(source);
-  }
-
-  if (typeof source !== "object") {
-    return source;
-  }
-
-  if (!target || typeof target !== "object" || Array.isArray(target)) {
-    target = {};
-  }
-
-  for (const key of Object.keys(source)) {
-    const s = source[key];
-    const t = target[key];
-
-    if (Array.isArray(s)) {
-      target[key] = structuredCloneSafe(s);
-    } else if (s && typeof s === "object") {
-      target[key] = deepMerge(t, s);
-    } else {
-      target[key] = s;
-    }
-  }
-
-  return target;
-}
-
 function saveLocal(){
   try{
     localStorage.setItem(LS_KEY, JSON.stringify(APP_STATE));
