@@ -2031,6 +2031,46 @@ function scheduleFlush(){
   }, SAVE_DEBOUNCE_MS);
 }
 
+function structuredCloneSafe(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function deepMerge(target, source){
+  if (source == null) return target;
+
+  if (Array.isArray(source)) {
+    return structuredCloneSafe(source);
+  }
+
+  if (typeof source !== "object") {
+    return source;
+  }
+
+  if (!target || typeof target !== "object" || Array.isArray(target)) {
+    target = {};
+  }
+
+  for (const key of Object.keys(source)) {
+    const s = source[key];
+    const t = target[key];
+
+    if (Array.isArray(s)) {
+      target[key] = structuredCloneSafe(s);
+    } else if (s && typeof s === "object") {
+      target[key] = deepMerge(t, s);
+    } else {
+      target[key] = s;
+    }
+  }
+
+  return target;
+}
+
+function clamp(n, min, max){
+  n = Number(n) || 0;
+  return Math.max(min, Math.min(max, n));
+}
+  
 function queuePatch(path, value){
   if (applyingRemoteState) return;
   pathSet(APP_STATE, path, value);
